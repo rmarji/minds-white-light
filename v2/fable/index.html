@@ -1,0 +1,557 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The Journey — MINDS Insight Retreat</title>
+<meta name="description" content="A seven-scene artistic journey: arrival, ignition, cascade, tunnel, white light, return, integration.">
+<link rel="icon" href="data:,">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&family=Mulish:wght@200;300&display=swap" rel="stylesheet">
+<style>
+  :root { --ink: #fff8ee; --shadow: rgba(8, 3, 14, .75); }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; background: #02030a; color: var(--ink); }
+  body { font-family: 'Cormorant Garamond', 'Iowan Old Style', Georgia, serif; overflow-x: hidden; touch-action: pan-y; }
+  canvas#gl { position: fixed; inset: 0; width: 100vw; height: 100vh; height: 100dvh; display: block; }
+  #track section { height: 240vh; }
+  #veil { position: fixed; inset: 0; pointer-events: none; opacity: 0; background: #05020c; }
+  #hud { position: fixed; left: 0; right: 0; bottom: max(5.5vh, env(safe-area-inset-bottom)); text-align: center;
+         pointer-events: none; padding: 0 6vw; transition: color .6s; text-shadow: 0 0 18px var(--shadow), 0 0 4px var(--shadow); }
+  #hud.dark { --ink: #3a2e28; --shadow: rgba(255, 255, 255, .0); color: var(--ink); }
+  #title { font-family: 'Mulish', 'Helvetica Neue', system-ui, sans-serif; font-weight: 300; text-transform: uppercase;
+           letter-spacing: .58em; font-size: clamp(10px, 1.25vw, 15px); padding-left: .58em; opacity: 0; }
+  #rule { width: 64px; height: 1px; margin: 14px auto 12px; background: currentColor; opacity: 0; }
+  #line { font-weight: 300; font-size: clamp(22px, 3.3vw, 46px); line-height: 1.2; letter-spacing: .02em; min-height: 1.3em; opacity: 0; }
+  #insight { position: fixed; left: 50%; top: 14vh; transform: translate(-50%, 8px); max-width: min(86vw, 620px); text-align: center;
+             font-style: italic; font-weight: 300; font-size: clamp(18px, 2.2vw, 28px); line-height: 1.35; opacity: 0;
+             transition: opacity .9s ease, transform .9s ease; pointer-events: none; text-shadow: 0 0 22px var(--shadow), 0 0 5px var(--shadow); }
+  #insight.on { opacity: 1; transform: translate(-50%, 0); }
+  #insight.dark { color: #3a2e28; text-shadow: none; }
+  .hot { position: fixed; left: 0; top: 0; width: 44px; height: 44px; margin: -22px 0 0 -22px; border: 0; padding: 0; background: none;
+         cursor: pointer; opacity: 0; transition: opacity .6s; touch-action: manipulation; }
+  .hot::before, .hot::after { content: ''; position: absolute; inset: 15px; border-radius: 50%; border: 1px solid currentColor; }
+  .hot::after { inset: 19px; background: currentColor; border: 0; animation: breathe 3.2s ease-in-out infinite; }
+  .hot::before { animation: ripple 3.2s ease-out infinite; }
+  .hot { color: rgba(255, 244, 225, .9); } .hot.dark { color: rgba(120, 90, 60, .8); }
+  @keyframes ripple { 0% { transform: scale(.6); opacity: .9; } 100% { transform: scale(2.3); opacity: 0; } }
+  @keyframes breathe { 0%, 100% { opacity: .45; } 50% { opacity: 1; } }
+  #dots { position: fixed; right: max(14px, env(safe-area-inset-right)); top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 14px; }
+  #dots button { width: 22px; height: 22px; padding: 0; border: 0; background: none; cursor: pointer; position: relative; }
+  #dots button::after { content: ''; position: absolute; inset: 8px; border-radius: 50%; background: currentColor; opacity: .35; transition: all .4s; }
+  #dots button.on::after { inset: 6px; opacity: 1; }
+  #dots, #play, #hint { color: #fff8ee; transition: color .6s; } .dark #dots, .dark #play, .dark #hint { color: #5a4a40; }
+  #play { position: fixed; left: max(16px, env(safe-area-inset-left)); top: max(14px, env(safe-area-inset-top)); background: none; border: 1px solid currentColor;
+          border-radius: 999px; padding: 9px 18px 9px 16px; font: 200 11px/1 'Mulish', system-ui, sans-serif; letter-spacing: .32em; text-transform: uppercase; cursor: pointer; opacity: .75; }
+  #play:hover { opacity: 1; }
+  #hint { position: fixed; left: 0; right: 0; top: max(18px, env(safe-area-inset-top)); text-align: center; font: 200 10px/1 'Mulish', system-ui, sans-serif;
+          letter-spacing: .4em; text-transform: uppercase; opacity: .55; pointer-events: none; transition: opacity 1s; padding-left: 110px; padding-right: 20px; }
+  #load { position: fixed; inset: 0; display: grid; place-items: center; background: #02030a; font: 200 12px 'Mulish', system-ui, sans-serif;
+          letter-spacing: .5em; text-transform: uppercase; transition: opacity 1.2s; z-index: 5; text-align: center; padding: 0 8vw; }
+  @media (max-width: 600px) { #track section { height: 200vh; } #hint { display: none; } }
+</style>
+<script type="importmap">
+{ "imports": { "three": "https://unpkg.com/three@0.170.0/build/three.module.js",
+               "three/addons/": "https://unpkg.com/three@0.170.0/examples/jsm/" } }
+</script>
+</head>
+<body>
+<canvas id="gl"></canvas>
+<div id="veil"></div>
+<main id="track">
+  <section></section><section></section><section></section><section></section><section></section><section></section><section></section>
+</main>
+<div id="hud"><div id="title"></div><div id="rule"></div><div id="line"></div></div>
+<div id="insight"></div>
+<nav id="dots" aria-label="Scenes"></nav>
+<button id="play" type="button">&#9654;&nbsp; Play</button>
+<div id="hint">Scroll to travel &nbsp;·&nbsp; drag to turn &nbsp;·&nbsp; tap the lights</div>
+<div id="load">Breathe&hellip;</div>
+
+<script type="module">
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+
+// ---------------------------------------------------------------- content
+const SCENES = [
+  { title: 'Arrival', lines: ['Breathe in. Let the noise settle.'],
+    insight: 'Nothing to do. Just this one breath.',
+    hots: [[0, 0, 0, 'Before anything begins, the light is already waiting.'],
+           [2.6, 0.5, 1.5, 'Every breath is a small arrival.'],
+           [-2.8, 1.0, -1.2, 'The noise was never yours to carry.']] },
+  { title: 'Ignition', lines: ['Every thought is a spark. Watch them light.'],
+    insight: 'You are the one watching the sparks, not the sparks.',
+    hots: [[0, 0.56, 0.12, 'The storyteller wakes first. It always does.'],
+           [0.55, 0.05, 0.48, 'A thought is only weather passing through.'],
+           [0, -0.28, -0.85, 'The oldest paths still carry the newest light.']] },
+  { title: 'Cascade', lines: ['The voice that narrates you goes quiet.'],
+    insight: 'When the narrator rests, the story does not end. It widens.',
+    hots: [[0, -0.44, 0.30, 'Here the “I” was kept. See how gently it dims.'],
+           [-0.55, 0.2, 0.34, 'Ten thousand branches, one tree.'],
+           [0.5, -0.45, 0.1, 'Colour is how silence sounds from the inside.']] },
+  { title: 'Tunnel', lines: ['Edges soften. Where do you end?'],
+    insight: 'You are not travelling. You are being remembered.',
+    hots: [[1.5, 7, 0.9, 'A boundary is a line drawn on water.'],
+           [-1.6, 10, -0.7, 'Every pattern is the same pattern, turning.'],
+           [0, 60, 0, 'The far light and the near eye are one event.']] },
+  { title: 'White light', lines: ['No self. No other. Only this.', 'Pure awareness, held in love.'],
+    insight: 'Nothing is missing here.',
+    hots: [[0, 26, 0, 'The one who was looking is what is seen.'],
+           [3.4, 26, 2.0, 'Stillness is not empty. It is full of you.'],
+           [-3.6, 26, -1.6, 'Love is the shape awareness takes when it stops defending.']] },
+  { title: 'Return', lines: ['You come back softer.'],
+    insight: 'The same mind, held more gently.',
+    hots: [[0, 0, 0.35, 'What you met does not leave. It learns your name.'],
+           [0.6, 0.3, -0.25, 'The edges return, but now you know they are drawn in light.']] },
+  { title: 'Integration', lines: ['Integration is where the journey lands.', 'Bring the light into the day.'],
+    insight: 'The summit was only ever a way back to the kitchen table.',
+    hots: [[0.03, 0.02, 0.57, 'The light was never elsewhere.'],
+           [130, 480, 62, 'Each dawn is the journey, repeated quietly.'],
+           [6, 34, -4.6, 'Wash the cup. Answer the letter. This is the practice.'],
+           [-24, 30, 5, 'The mountain does not hurry the morning.']] },
+];
+const ROMAN = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII'];
+const N = SCENES.length;
+
+// ---------------------------------------------------------------- helpers
+const B = (x, y, z) => new THREE.Vector3(x, z, -y);            // Blender (Z up) -> three (Y up)
+const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+const ramp = (t, a, b) => clamp((t - a) / (b - a));
+const smooth = (x) => { x = clamp(x); return x * x * (3 - 2 * x); };
+const lerp = (a, b, t) => a + (b - a) * t;
+const vlerp = (a, b, t) => new THREE.Vector3().lerpVectors(a, b, t);
+const $ = (id) => document.getElementById(id);
+
+const canvas = $('gl');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
+const DPR = Math.min(window.devicePixelRatio || 1, 2);
+renderer.setPixelRatio(DPR);
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(50, 1, 0.02, 4000);
+const pivot = new THREE.Group();                 // drag rotates this
+scene.add(pivot);
+const groups = [];
+for (let i = 0; i < N; i++) { const g = new THREE.Group(); g.visible = false; pivot.add(g); groups.push(g); }
+const skyGroup = new THREE.Group(); skyGroup.visible = false; scene.add(skyGroup);
+
+const composer = new EffectComposer(renderer);
+composer.addPass(new RenderPass(scene, camera));
+const bloom = new UnrealBloomPass(new THREE.Vector2(256, 256), 1.0, 0.7, 0.0);
+composer.addPass(bloom);
+composer.addPass(new OutputPass());
+
+const U = { uT: { value: 0 }, uDpr: { value: DPR } };          // shared uniforms
+
+// soft round sprite texture for glows
+function glowTexture() {
+  const c = document.createElement('canvas'); c.width = c.height = 128;
+  const x = c.getContext('2d'); const g = x.createRadialGradient(64, 64, 0, 64, 64, 64);
+  g.addColorStop(0, 'rgba(255,255,255,1)'); g.addColorStop(0.18, 'rgba(255,255,255,.55)');
+  g.addColorStop(0.5, 'rgba(255,255,255,.12)'); g.addColorStop(1, 'rgba(255,255,255,0)');
+  x.fillStyle = g; x.fillRect(0, 0, 128, 128);
+  return new THREE.CanvasTexture(c);
+}
+const GLOW = glowTexture();
+function glow(color, size) {
+  const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: GLOW, color, blending: THREE.AdditiveBlending, depthWrite: false, depthTest: false, transparent: true }));
+  s.scale.setScalar(size);
+  return s;
+}
+
+const LINE_VERT = /* glsl */`
+  attribute float _u; attribute float _seed; attribute float _col; attribute float _dmn; attribute float _rad; attribute float _kind;
+  varying float vU, vSeed, vCol, vDmn, vRad, vKind, vDist; varying vec3 vPos;
+  void main() {
+    vU = _u; vSeed = _seed; vCol = _col; vDmn = _dmn; vRad = _rad; vKind = _kind; vPos = position;
+    vec4 mv = modelViewMatrix * vec4(position, 1.0);
+    vDist = -mv.z;
+    gl_Position = projectionMatrix * mv;
+  }`;
+const HEAD = /* glsl */`
+  precision highp float;
+  uniform float uT;
+  varying float vU, vSeed, vCol, vDmn, vRad, vKind, vDist; varying vec3 vPos;
+  vec3 pal4(float t, vec3 a, vec3 b, vec3 c, vec3 d) {
+    t = fract(t) * 4.0;
+    if (t < 1.0) return mix(a, b, t); if (t < 2.0) return mix(b, c, t - 1.0);
+    if (t < 3.0) return mix(c, d, t - 2.0); return mix(d, a, t - 3.0);
+  }`;
+function lineMat(frag, uniforms, blending = THREE.AdditiveBlending) {
+  return new THREE.ShaderMaterial({ vertexShader: LINE_VERT, fragmentShader: HEAD + frag, uniforms: { uT: U.uT, ...uniforms },
+    blending, transparent: true, depthWrite: false, depthTest: false });
+}
+function pointsMat(uniforms, frag, blending = THREE.AdditiveBlending) {
+  return new THREE.ShaderMaterial({
+    uniforms: { uT: U.uT, uDpr: U.uDpr, uSize: { value: 1 }, ...uniforms },
+    vertexShader: /* glsl */`
+      attribute float _seed; uniform float uT, uDpr, uSize; varying float vSeed; varying float vDist;
+      void main() { vSeed = _seed; vec4 mv = modelViewMatrix * vec4(position, 1.0); vDist = -mv.z;
+        gl_PointSize = uSize * uDpr * (0.6 + _seed) * 60.0 / max(0.3, -mv.z); gl_Position = projectionMatrix * mv; }`,
+    fragmentShader: /* glsl */`precision highp float; uniform float uT; varying float vSeed; varying float vDist;` + frag,
+    blending, transparent: true, depthWrite: false, depthTest: false });
+}
+
+// ---------------------------------------------------------------- materials
+const brainU = { uBase: { value: .5 }, uSpark: { value: 0 }, uSfrac: { value: 0 }, uWave: { value: 0 }, uDmnGain: { value: 1 },
+  uHub: { value: 1 }, uWhite: { value: 0 }, uWarm: { value: 0 }, uGain: { value: .5 } };
+const brainMat = lineMat(/* glsl */`
+  uniform float uBase, uSpark, uSfrac, uWave, uDmnGain, uHub, uWhite, uWarm, uGain;
+  void main() {
+    vec3 cool = mix(mix(vec3(.04,.10,.60), vec3(.08,.42,.95), smoothstep(0., .5, vCol)), vec3(.42,.18,.95), smoothstep(.5, 1., vCol));
+    vec3 warm = mix(mix(vec3(1.,.40,.22), vec3(1.,.68,.36), smoothstep(0., .5, vCol)), vec3(.95,.38,.50), smoothstep(.5, 1., vCol));
+    float vary = .22 + 1.9 * pow(fract(vSeed * 5.77), 2.5);
+    float flick = .7 + .3 * sin(vU * 9. + vSeed * 40. + uT * 1.5);
+    vec3 c = mix(cool, warm, uWarm) * uBase * flick * vary;
+    float pulse = pow(fract(vU * .9 - uT * 1.1 + vSeed * 31.), 14.);
+    float act = clamp((uSfrac - fract(vSeed * 7.31)) * 20., 0., 1.);
+    c += vec3(1., .72, .30) * uSpark * act * pulse * 6.;
+    float wph = vRad * 1.5 - uT * .85 + vSeed * .12;
+    vec3 wc = pal4(wph, vec3(1.,.08,.55), vec3(.45,.15,1.), vec3(.05,.75,1.), vec3(1.,.66,.10));
+    c += wc * uWave * (.22 + 1.25 * pow(.5 + .5 * sin(wph * 12.566), 4.));
+    c += vec3(1.) * uWave * pow(fract(vU * 1.6 - uT * 2.4 + vSeed * 13.), 10.) * 1.6;
+    c *= mix(1., uDmnGain, vDmn);
+    c += vec3(1., .5, .1) * uHub * vDmn * vDmn * (.62 + .38 * sin(uT * 5.2)) * uDmnGain * 1.3;
+    c = mix(c, vec3(1., .95, .86) * .6, uWhite);
+    gl_FragColor = vec4(c * uGain * smoothstep(.03, .5, vDist), 1.);
+  }`, brainU);
+const dendU = { uGrow: { value: 0 }, uGain: { value: 1 } };
+const dendMat = lineMat(/* glsl */`
+  uniform float uGrow, uGain;
+  void main() {
+    float d = uGrow - vU; float reveal = clamp(d * 10., 0., 1.); float tip = reveal * exp(-d * 7.);
+    vec3 c = pal4(vU * .45 - uT * .5 + vSeed, vec3(1.,.25,.7), vec3(.3,.9,1.), vec3(1.,.8,.3), vec3(1.,.25,.7));
+    float ph = pow(fract(vU * 2. - uT * 1.6 + vSeed), 6.);
+    gl_FragColor = vec4(mix(c, vec3(1.), clamp(tip * .8, 0., 1.)) * uGain * (reveal * (.5 + ph * 3.) + tip * 6.), 1.);
+  }`, dendU);
+const filU = { uFront: { value: 20 }, uFGain: { value: 1 }, uFBase: { value: .006 }, uNear: { value: new THREE.Color(1, .82, .55) }, uFar: { value: new THREE.Color(.3, .52, 1) } };
+const filMat = lineMat(/* glsl */`
+  uniform float uFront, uFGain, uFBase; uniform vec3 uNear, uFar;
+  void main() {
+    float d = vU - (uFront + vSeed * 4.5);
+    float pk = exp(-pow(max(d, 0.) / 1.5, 2.)) * exp(-pow(min(d, 0.) / .22, 2.));
+    float near = 1.6 / (.35 + vU * .5);
+    vec3 c = mix(uNear, uFar, clamp(vU / 5., 0., 1.));
+    gl_FragColor = vec4(c * (uFGain * pk * near * 2.6 + uFBase * (1. + near * near * near)), 1.);
+  }`, filU);
+const tunU = { uGain: { value: 1 }, uWhite: { value: 0 }, uZ: { value: 0 } };
+const tunMat = lineMat(/* glsl */`
+  uniform float uGain, uWhite, uZ;
+  void main() {
+    float depth = vDist + uZ;
+    float h = fract(depth * .034 - uT * .2 + vKind * .06) * 5.;
+    vec3 a = vec3(.42,.08,1.), b = vec3(1.,.08,.55), c2 = vec3(1.,.42,.06), d2 = vec3(1.,.8,.25), e = vec3(.08,.9,.8), c;
+    if (h < 1.) c = mix(a, b, h); else if (h < 2.) c = mix(b, c2, h - 1.); else if (h < 3.) c = mix(c2, d2, h - 2.);
+    else if (h < 4.) c = mix(d2, e, h - 3.); else c = mix(e, a, h - 4.);
+    float pulse = pow(.5 + .5 * sin(vU * 2.6 - uT * 6. + vSeed * 60.), 6.);
+    float s = uGain * (.6 + pulse * 2.6) * exp(-vDist / 30.) * clamp(vDist / 1.2, 0., 1.);
+    gl_FragColor = vec4(mix(c, vec3(1., .97, .9), uWhite) * s, 1.);
+  }`, tunU);
+const dustU = { uColor: { value: new THREE.Color(.55, .7, 1) }, uGain: { value: 1 } };
+const dustFrag = /* glsl */`uniform vec3 uColor; uniform float uGain;
+  void main() { float r = length(gl_PointCoord - .5) * 2.; float a = smoothstep(1., 0., r);
+    float tw = pow(.5 + .5 * sin(uT * 1.3 + vSeed * 50.), 2.);
+    gl_FragColor = vec4(uColor * uGain * a * a * (.25 + tw * 1.6), a); }`;
+
+// ---------------------------------------------------------------- build from GLB
+const parts = {};
+let sky, mist, figureMat, aura, sunGlow, orb, core, endLight, halo, villageMat, motesMat, mandalas = [], tunnels = [], tunnelPeriod = 12.8;
+const dustMats = {};
+const SUN_AZ = 15 * Math.PI / 180;
+const HEART = B(0.03, 0.02, 0.57), HEADP = B(0, 0.01, 0.92);
+
+function build(gltf) {
+  gltf.scene.updateMatrixWorld(true);
+  gltf.scene.traverse((o) => { if (o.geometry) parts[o.name] = o; });
+  const geo = (n) => parts[n].geometry;
+  const addDust = (i, color, size, blending) => {
+    const m = pointsMat({ uColor: { value: new THREE.Color(...color) }, uGain: { value: 1 } }, dustFrag, blending);
+    m.uniforms.uSize.value = size; dustMats[i] = m;
+    const p = new THREE.Points(geo('dust'), m); p.frustumCulled = false; groups[i].add(p); return p;
+  };
+  const addLines = (i, name, mat) => { const l = new THREE.LineSegments(geo(name), mat); l.frustumCulled = false; groups[i].add(l); return l; };
+
+  // 1 arrival
+  addLines(0, 'filaments', filMat); addDust(0, [.55, .7, 1], 1);
+  orb = glow(0xbfdcff, 2); core = glow(0xfff0d0, 1); groups[0].add(orb, core);
+  // 2 ignition, 3 cascade, 6 return share the brain
+  addLines(1, 'brain', brainMat); addDust(1, [.55, .7, 1], .8);
+  addLines(2, 'brain', brainMat); addLines(2, 'dendrites', dendMat); addDust(2, [1, .6, .9], .8);
+  addLines(5, 'brain', brainMat); addLines(5, 'filaments', filMat); addDust(5, [1, .8, .6], .8);
+  halo = glow(0xffb070, 5); groups[5].add(halo);
+  // 4 tunnel: repeat one period of rings
+  tunnelPeriod = (parts.tunnel.userData && parts.tunnel.userData.period) || 12.8;
+  for (let k = 0; k < 9; k++) tunnels.push(addLines(3, 'tunnel', tunMat));
+  endLight = glow(0xfff2dd, 10); groups[3].add(endLight);
+  // 5 white light
+  const mm = new THREE.LineBasicMaterial({ color: 0xcfa66a, transparent: true, opacity: .55, depthTest: false });
+  [[2.2, 26], [5.2, 40]].forEach(([R, y], k) => { const l = new THREE.LineSegments(geo('mandala'), mm);
+    l.scale.setScalar(R); l.position.copy(B(0, y, 0)); groups[4].add(l); mandalas.push(l); });
+  motesMat = pointsMat({ uColor: { value: new THREE.Color(.82, .62, .36) }, uGain: { value: 1 } }, /* glsl */`uniform vec3 uColor; uniform float uGain;
+    void main() { float r = length(gl_PointCoord - .5) * 2.; float a = smoothstep(1., .2, r) * (.25 + .5 * pow(.5 + .5 * sin(uT * .8 + vSeed * 50.), 2.));
+      gl_FragColor = vec4(uColor, a * uGain); }`, THREE.NormalBlending);
+  motesMat.uniforms.uSize.value = 1.6;
+  const motes = new THREE.Points(geo('dust'), motesMat); motes.frustumCulled = false; motes.position.copy(B(0, 16, 0)); groups[4].add(motes);
+  // 7 integration
+  const g7 = groups[6];
+  for (let i = 0; i < 4; i++) { const m = new THREE.Mesh(geo('ridge' + i), new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.DoubleSide })); m.frustumCulled = false; g7.add(m); }
+  g7.add(new THREE.Mesh(geo('ledge'), new THREE.MeshBasicMaterial({ color: 0x1c0d0c, side: THREE.DoubleSide })));
+  geo('figure').computeVertexNormals();
+  figureMat = new THREE.ShaderMaterial({ uniforms: { uC: { value: HEADP.clone() }, uR: { value: .1 }, uS: { value: 2 }, uRim: { value: .5 } },
+    vertexShader: /* glsl */`varying vec3 vP; varying vec3 vN; varying vec3 vV;
+      void main() { vP = position; vN = normalize(normalMatrix * normal); vec4 mv = modelViewMatrix * vec4(position, 1.); vV = normalize(-mv.xyz); gl_Position = projectionMatrix * mv; }`,
+    fragmentShader: /* glsl */`precision highp float; uniform vec3 uC; uniform float uR, uS, uRim; varying vec3 vP; varying vec3 vN; varying vec3 vV;
+      void main() { float f = pow(1. - abs(dot(normalize(vN), normalize(vV))), 3.); float d = distance(vP, uC);
+        vec3 c = vec3(.012, .007, .012) + vec3(1., .5, .22) * f * uRim + vec3(1., .62, .25) * uS * exp(-pow(d / uR, 2.));
+        gl_FragColor = vec4(c, 1.); }`, side: THREE.DoubleSide });
+  g7.add(new THREE.Mesh(geo('figure'), figureMat));
+  aura = glow(0xff9a48, 1); g7.add(aura);
+  villageMat = pointsMat({ uLife: { value: 0 } }, /* glsl */`uniform float uLife;
+    void main() { float r = length(gl_PointCoord - .5) * 2.; float a = smoothstep(1., 0., r); float on = clamp((uLife - vSeed) * 8., 0., 1.);
+      gl_FragColor = vec4(vec3(1., .72, .36) * a * a * on * (1.6 + .6 * sin(uT * 3. + vSeed * 90.)), 1.); }`);
+  villageMat.uniforms.uSize.value = 3.2;
+  const vil = new THREE.Points(geo('village'), villageMat); vil.frustumCulled = false; g7.add(vil);
+  mist = new THREE.Mesh(new THREE.PlaneGeometry(4000, 4000), new THREE.ShaderMaterial({
+    uniforms: { uDawn: { value: 1 } },
+    vertexShader: /* glsl */`varying float vD; void main() { vec4 mv = modelViewMatrix * vec4(position, 1.); vD = length(mv.xyz); gl_Position = projectionMatrix * mv; }`,
+    fragmentShader: /* glsl */`precision highp float; uniform float uDawn; varying float vD;
+      void main() { gl_FragColor = vec4(mix(vec3(.035, .018, .035), vec3(.80, .36, .20), 1. - exp(-vD / 55.)) * uDawn, 1.); }` }));
+  mist.rotation.x = -Math.PI / 2; mist.position.y = -5.2; g7.add(mist);
+  sky = new THREE.Mesh(new THREE.SphereGeometry(2500, 48, 24), new THREE.ShaderMaterial({ side: THREE.BackSide, depthWrite: false,
+    uniforms: { uSun: { value: new THREE.Vector3(0, .1, -1) }, uDawn: { value: 1 } },
+    vertexShader: /* glsl */`varying vec3 vD; void main() { vD = normalize(position); gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.); }`,
+    fragmentShader: /* glsl */`precision highp float; uniform vec3 uSun; uniform float uDawn; varying vec3 vD;
+      void main() { vec3 d = normalize(vD); float e = max(d.y, 0.);
+        vec3 c = mix(vec3(.95, .42, .16), vec3(.80, .30, .17), smoothstep(0., .06, e));
+        c = mix(c, vec3(.42, .17, .27), smoothstep(.06, .17, e)); c = mix(c, vec3(.09, .07, .24), smoothstep(.17, .30, e));
+        c = mix(c, vec3(.012, .018, .09), smoothstep(.30, 1., e));
+        float dt = max(dot(d, normalize(uSun)), 0.);
+        float g = pow(dt, 900.) * 3. + pow(dt, 60.) * .5 + pow(dt, 6.) * .14 + smoothstep(.99984, .99990, dt) * 8.;
+        gl_FragColor = vec4(c * uDawn + vec3(1., .62, .30) * g, 1.); }` }));
+  skyGroup.add(sky);
+  sunGlow = glow(0xffc890, 420); skyGroup.add(sunGlow);
+}
+
+// ---------------------------------------------------------------- per-scene update
+const BG = [0x02030a, 0x02030c, 0x06020f, 0x07000f, 0xf6f2ec, 0x04030a, 0x1a0c14].map((c) => new THREE.Color(c));
+const WHITE = new THREE.Color(0xf6f2ec);
+const bg = new THREE.Color();
+const tgt = new THREE.Vector3();
+let roll = 0, fov = 50, bloomS = 1, bloomT = 0;
+
+function look(pos, target, r = 0) { camera.position.copy(pos); camera.up.set(0, 1, 0); camera.lookAt(target); camera.rotateZ(r); }
+
+const UPDATE = [
+  (f, t) => {                                             // 1 arrival: the scroll is the inhale
+    const inh = ramp(f, .12, .82), e = Math.pow(inh, 1.9), swell = smooth(ramp(f, .8, 1));
+    filU.uFront.value = lerp(12.5, -6, e) - 8 * ramp(f, .82, 1); filU.uFGain.value = .15 + .9 * inh; filU.uFBase.value = .002 + .004 * inh;
+    filU.uNear.value.setRGB(1, .82, .55); filU.uFar.value.setRGB(.3, .52, 1);
+    const s = (.16 + .55 * smooth(inh) + 2.6 * swell * swell) * (1 + .05 * Math.sin(t * 2.2));
+    orb.scale.setScalar(s * 5); core.scale.setScalar(s * 1.2);
+    orb.material.opacity = .15 + .45 * e + .4 * swell; core.material.opacity = .4 + .4 * e;
+    dustMats[0].uniforms.uGain.value = 1 - .5 * inh;
+    look(B(.5 * Math.sin(t * .2), lerp(-9.2, -5.4, smooth(f)), .5 - .3 * f), B(0, 0, 0), .03 * Math.sin(t * .4));
+    fov = 40; bloomS = .8; bloomT = 0; bg.copy(BG[0]);
+  },
+  (f, t) => {                                             // 2 ignition: fly in, sparks multiply
+    const k = Math.pow(smooth(f), .9), K = [[2.9, -4.1, 1.7], [1.25, -1.9, .85], [.2, -.52, .22]];
+    const p = [0, 1, 2].map((i) => (1 - k) * (1 - 2 * k) * K[0][i] + 4 * k * (1 - k) * K[1][i] + k * (2 * k - 1) * K[2][i]);
+    look(B(...p), vlerp(B(0, 0, .02), B(0, .5, .13), smooth(k)), .25 * (1 - k) - .1);
+    Object.assign(brainU.uBase, { value: .22 + .5 * smooth(ramp(f, 0, .3)) });
+    brainU.uSpark.value = smooth(ramp(f, .15, .3)) * (1 + .8 * ramp(f, .5, 1)); brainU.uSfrac.value = .012 + .05 * ramp(f, .25, .5) + .55 * Math.pow(ramp(f, .5, 1), 1.6);
+    brainU.uWave.value = 0; brainU.uDmnGain.value = 1; brainU.uHub.value = .25 + .75 * smooth(ramp(f, .35, .7)); brainU.uWhite.value = 0; brainU.uWarm.value = 0; brainU.uGain.value = .11;
+    fov = 62; bloomS = .7; bloomT = 0; bg.copy(BG[1]);
+  },
+  (f, t) => {                                             // 3 cascade: storm rises, the hub goes quiet
+    const k = smooth(ramp(f, 0, .86)), az = THREE.MathUtils.degToRad(lerp(-205, -58, k)), el = THREE.MathUtils.degToRad(lerp(8, 50, k));
+    const dive = Math.pow(ramp(f, .9, 1), 2), r = lerp(.55, 2.7, Math.pow(k, 1.25)) * (1 - .72 * dive);
+    look(B(r * Math.cos(el) * Math.cos(az), r * Math.cos(el) * Math.sin(az), r * Math.sin(el) + .05), B(0, 0, .03), .3 * (1 - k));
+    brainU.uBase.value = lerp(.5, .12, smooth(ramp(f, .02, .3))); brainU.uSpark.value = .45; brainU.uSfrac.value = lerp(.6, 1, ramp(f, 0, .3));
+    brainU.uWave.value = .45 * smooth(ramp(f, .02, .3)) + dive; brainU.uHub.value = 1.6; brainU.uDmnGain.value = lerp(1, .012, smooth(ramp(f, .34, .65)));
+    brainU.uWhite.value = 0; brainU.uWarm.value = 0; brainU.uGain.value = lerp(.11, .017, smooth(ramp(f, .08, .55)));
+    dendU.uGrow.value = 3.2 * Math.pow(ramp(f, .06, .74), 1.1); dendU.uGain.value = lerp(.3, .1, k);
+    fov = 62; bloomS = .7; bloomT = 0; bg.copy(BG[2]);
+  },
+  (f, t) => {                                             // 4 tunnel: camera stays, the corridor streams past
+    const travel = t * 7 + f * 90, shift = travel % tunnelPeriod;
+    tunnels.forEach((l, k) => { l.position.z = -(k * tunnelPeriod - shift) + 1.5; l.rotation.z = (Math.floor(travel / tunnelPeriod) + k) * 1.257; });
+    const w = Math.pow(ramp(f, .78, .98), 2);
+    tunU.uWhite.value = w; tunU.uGain.value = .34 + .3 * ramp(f, .4, 1) + 2 * w; tunU.uZ.value = travel;
+    endLight.position.set(0, 0, -62); endLight.scale.setScalar(10 + 30 * Math.pow(ramp(f, .3, 1), 2) + 600 * w); endLight.material.opacity = .55 + .45 * w;
+    look(new THREE.Vector3(.16 * Math.sin(t * .9), .14 * Math.sin(t * 1.3 + 1), 0), new THREE.Vector3(.3 * Math.sin(t * .7 + 2), .25 * Math.sin(t * .5), -10), .25 * t + f * 3);
+    fov = 88; bloomS = .75 + 1.2 * w; bloomT = 0; bg.copy(BG[3]).lerp(WHITE, w);
+  },
+  (f, t) => {                                             // 5 white light: almost nothing moves
+    const love = smooth(ramp(f, .45, .7));
+    mandalas.forEach((m, i) => { m.rotation.z = (i ? -.012 : .02) * t; m.scale.setScalar((i ? 5.2 : 2.2) * (1 + .025 * Math.sin(t * .55 + i))); });
+    mandalas[0].material.color.setRGB(lerp(.80, .92, love), lerp(.64, .52, love), lerp(.40, .36, love));
+    motesMat.uniforms.uColor.value.setRGB(lerp(.82, .9, love), lerp(.62, .5, love), lerp(.36, .38, love));
+    look(B(.25 * Math.sin(t * .12), 1.6 * f, .2 * Math.sin(t * .1 + 1)), B(0, 30, 0), .012 * t);
+    fov = 52; bloomS = 0; bloomT = 1; bg.setRGB(lerp(.965, .985, love), lerp(.953, .93, love), lerp(.94, .90, love));
+  },
+  (f, t) => {                                             // 6 return: the white drains into the threads
+    const tt = f * 8, bgk = Math.exp(-tt * 2.1), k = 1 - Math.pow(1 - f, 2.2);
+    bg.copy(BG[5]).lerp(WHITE, bgk);
+    brainU.uWhite.value = 1 - smooth(ramp(tt, 0, 3.6)); brainU.uBase.value = lerp(1.3, .55, smooth(ramp(tt, 2, 7))); brainU.uSpark.value = .5; brainU.uSfrac.value = .22;
+    brainU.uWave.value = 0; brainU.uHub.value = .5; brainU.uDmnGain.value = .8; brainU.uWarm.value = .82; brainU.uGain.value = lerp(.07, .032, k) * (1 - bgk);
+    filU.uFront.value = lerp(10, -6, Math.pow(ramp(tt, 2.2, 7), 1.2)); filU.uFGain.value = .12 * Math.sin(Math.PI * ramp(tt, 2.2, 7.6)) * (1 - bgk); filU.uFBase.value = .0003 * (1 - bgk);
+    filU.uNear.value.setRGB(1, .9, .75); filU.uFar.value.setRGB(1, .7, .5);
+    dustMats[5].uniforms.uGain.value = .7 * smooth(ramp(tt, 1.5, 4));
+    halo.material.opacity = .10 * smooth(ramp(tt, 1, 3.5)) * (1 + .1 * Math.sin(t * 2));
+    const az = THREE.MathUtils.degToRad(lerp(-120, -76, k)), r = lerp(.9, 4.2, k);
+    look(B(r * Math.cos(az), r * Math.sin(az), .15 + .22 * r), B(0, 0, lerp(.05, -.05, k)), .12 * (1 - k));
+    fov = 45; bloomS = .5 * (1 - bgk); bloomT = bgk > .3 ? 1 : 0;
+  },
+  (f, t) => {                                             // 7 integration: head -> heart -> the valley wakes
+    const dawn = smooth(ramp(f, 0, .9)), elv = THREE.MathUtils.degToRad(lerp(2.2, 6.6, dawn));
+    const sun = B(Math.sin(SUN_AZ) * Math.cos(elv), Math.cos(SUN_AZ) * Math.cos(elv), Math.sin(elv));
+    sky.material.uniforms.uSun.value.copy(sun); sky.material.uniforms.uDawn.value = lerp(.55, 1, dawn); mist.material.uniforms.uDawn.value = lerp(.55, 1, dawn);
+    sunGlow.position.copy(sun).multiplyScalar(2000); sunGlow.material.opacity = lerp(.3, .7, dawn);
+    const k = smooth(ramp(f, .12, .45)), c = vlerp(HEADP, HEART, k), beat = 1 + .1 * Math.sin(t * 2.4) * k;
+    figureMat.uniforms.uC.value.copy(c); figureMat.uniforms.uR.value = lerp(.085, .11, k); figureMat.uniforms.uS.value = lerp(1.8, 2.4, k) * beat; figureMat.uniforms.uRim.value = lerp(.25, .75, dawn);
+    aura.position.copy(c); aura.scale.setScalar(lerp(.7, 1.0, k) * beat); aura.material.opacity = .5;
+    villageMat.uniforms.uLife.value = lerp(-.1, 1.05, ramp(f, .5, .95));
+    const kc = smooth(ramp(f, .04, .85)), wide = camera.aspect < 1 ? 1.5 : 1;
+    const p = vlerp(B(.1, -1.25, 1.02), B(-1.3 * wide, -5.2 * wide, 1.5 + .3 * (wide - 1)), Math.pow(kc, .85));
+    look(p, vlerp(B(0, 0, .9), camera.aspect < 1 ? B(.6, 6, .9) : B(3.3, 6, .25), kc));
+    fov = 38; bloomS = .32; bloomT = .72; bg.copy(BG[6]);
+  },
+];
+
+// ---------------------------------------------------------------- scroll, drag, tap
+const hud = $('hud'), titleEl = $('title'), lineEl = $('line'), ruleEl = $('rule'), veil = $('veil'), insightEl = $('insight');
+let progress = 0, active = -1, lineShown = '', yaw = 0, pitch = 0, yawT = 0, pitchT = 0;
+function readScroll() {
+  const max = document.documentElement.scrollHeight - window.innerHeight;
+  progress = clamp(max > 0 ? window.scrollY / max : 0, 0, 0.99999) * N;
+}
+window.addEventListener('scroll', readScroll, { passive: true });
+
+const dots = $('dots');
+SCENES.forEach((s, i) => { const b = document.createElement('button'); b.type = 'button'; b.title = s.title; b.setAttribute('aria-label', s.title);
+  b.addEventListener('click', () => scrollToScene(i + 0.35)); dots.appendChild(b); });
+function scrollToScene(p, behavior = 'smooth') {
+  const max = document.documentElement.scrollHeight - window.innerHeight;
+  window.scrollTo({ top: max * p / N, behavior });
+}
+
+// hotspots are real buttons: easy to tap, keyboard reachable
+const hots = [];
+SCENES.forEach((s, i) => s.hots.forEach(([x, y, z, text]) => {
+  const el = document.createElement('button'); el.type = 'button'; el.className = 'hot' + (i === 4 ? ' dark' : ''); el.setAttribute('aria-label', 'Reveal an insight');
+  el.addEventListener('click', (ev) => { ev.stopPropagation(); say(text); });
+  document.body.appendChild(el); hots.push({ el, scene: i, pos: B(x, y, z), fixed: i === 3 || (i === 6 && y > 100) });
+}));
+let sayTimer = 0;
+function say(text) {
+  insightEl.classList.toggle('dark', active === 4);
+  insightEl.classList.remove('on');
+  clearTimeout(sayTimer);
+  sayTimer = setTimeout(() => { insightEl.textContent = text; insightEl.classList.add('on'); sayTimer = setTimeout(() => insightEl.classList.remove('on'), 6500); }, 180);
+}
+
+let drag = null;
+window.addEventListener('pointerdown', (e) => { if (e.target.closest && e.target.closest('button')) return; drag = { x: e.clientX, y: e.clientY, moved: 0, id: e.pointerId }; });
+window.addEventListener('pointermove', (e) => {
+  if (!drag || e.pointerId !== drag.id) return;
+  const dx = e.clientX - drag.x, dy = e.clientY - drag.y; drag.x = e.clientX; drag.y = e.clientY; drag.moved += Math.abs(dx) + Math.abs(dy);
+  yawT += dx * 0.006; if (e.pointerType === 'mouse') pitchT += dy * 0.004;
+  const lim = active === 6 ? .45 : active === 4 ? .5 : 3.2;
+  yawT = clamp(yawT, -lim, lim); pitchT = clamp(pitchT, -.5, .5);
+});
+const endDrag = (e) => {
+  if (!drag) return; const tap = drag.moved < 8; drag = null;
+  if (tap && !(e.target.closest && e.target.closest('button')) && active >= 0) say(SCENES[active].insight);
+};
+window.addEventListener('pointerup', endDrag); window.addEventListener('pointercancel', () => { drag = null; });
+window.addEventListener('keydown', (e) => {
+  if (e.key === 'ArrowRight' || e.key === 'PageDown') scrollToScene(Math.min(N - .5, Math.floor(progress) + 1.35));
+  if (e.key === 'ArrowLeft' || e.key === 'PageUp') scrollToScene(Math.max(0, Math.floor(progress) - 1 + .35));
+});
+
+// auto-play: glide through the whole journey in about a minute
+let playing = false, playFrom = 0, playT0 = 0;
+const PLAY_SECONDS = 64;
+$('play').addEventListener('click', () => { playing = !playing; $('play').innerHTML = playing ? '&#10073;&#10073;&nbsp; Pause' : '&#9654;&nbsp; Play';
+  if (playing) { if (progress > N - .2) scrollToScene(0, 'instant'); playFrom = progress > N - .2 ? 0 : progress; playT0 = performance.now(); } });
+['wheel', 'touchstart'].forEach((ev) => window.addEventListener(ev, (e) => { if (playing && e.target !== $('play')) $('play').click(); }, { passive: true }));
+
+function resize() {
+  const w = window.innerWidth, h = window.innerHeight;
+  renderer.setSize(w, h, false); composer.setSize(w, h); camera.aspect = w / h; camera.updateProjectionMatrix();
+}
+window.addEventListener('resize', resize);
+
+// ---------------------------------------------------------------- frame
+const clock = new THREE.Clock();
+const v = new THREE.Vector3();
+function frame() {
+  requestAnimationFrame(frame);
+  const t = clock.getElapsedTime();
+  U.uT.value = t;
+  if (playing) {
+    const p = playFrom + (performance.now() - playT0) / 1000 * (N / PLAY_SECONDS);
+    if (p >= N - .01) { playing = false; $('play').innerHTML = '&#9654;&nbsp; Play'; } else scrollToScene(p, 'instant');
+  }
+  readScroll();
+  const i = Math.min(N - 1, Math.floor(progress)), f = progress - i;
+  if (i !== active) {
+    active = i;
+    groups.forEach((g, k) => { g.visible = k === i; });
+    skyGroup.visible = i === 6;
+    titleEl.textContent = ROMAN[i] + '  ·  ' + SCENES[i].title;
+    [hud, document.body].forEach((el) => el.classList.toggle('dark', i === 4));
+    [...dots.children].forEach((b, k) => b.classList.toggle('on', k === i));
+    yawT *= .3; pitchT *= .3; insightEl.classList.remove('on');
+    if (i > 0) $('hint').style.opacity = 0;
+  }
+  // captions follow the scroll: title throughout, lines fade in/out (two-line scenes split in half)
+  const L = SCENES[i].lines, env = smooth(ramp(f, .06, .16)) * (1 - smooth(ramp(f, .86, .95)));
+  let which = 0, lo = env;
+  if (L.length === 2) { which = f < .52 ? 0 : 1; lo = which === 0 ? smooth(ramp(f, .08, .18)) * (1 - smooth(ramp(f, .42, .5))) : smooth(ramp(f, .54, .64)) * (1 - smooth(ramp(f, .88, .96))); }
+  if (lineShown !== L[which]) { lineShown = L[which]; lineEl.textContent = lineShown; }
+  titleEl.style.opacity = env * .9; ruleEl.style.opacity = env * .45; lineEl.style.opacity = lo;
+  // designed transitions: a veil of dark (or light, around the white scene) at each threshold
+  const edge = Math.min(i > 0 ? f : 1, i < N - 1 ? 1 - f : 1), vo = 1 - smooth(ramp(edge, 0, .07));
+  const whiteEdge = (i === 3 && f > .5) || i === 4 || (i === 5 && f < .5);
+  veil.style.background = whiteEdge ? '#f6f2ec' : '#05020c'; veil.style.opacity = vo;
+
+  yaw += (yawT - yaw) * .08; pitch += (pitchT - pitch) * .08;
+  pivot.rotation.set(pitch, yaw, 0);
+  UPDATE[i](f, t);
+  const portrait = camera.aspect < 1 ? 1.25 : 1;
+  camera.fov = Math.min(110, fov * portrait); camera.updateProjectionMatrix();
+  scene.background = bg;
+  bloom.strength = bloomS; bloom.threshold = bloomT; bloom.radius = .7;
+
+  // place hotspot buttons over their 3D anchors
+  const w = window.innerWidth, h = window.innerHeight;
+  camera.updateMatrixWorld();
+  for (const s of hots) {
+    let op = 0;
+    if (s.scene === i && env > .2) {
+      v.copy(s.pos); if (!s.fixed) v.applyMatrix4(pivot.matrixWorld);
+      v.project(camera);
+      if (v.z < 1 && Math.abs(v.x) < .94 && v.y < .8 && v.y > -.5) {
+        s.el.style.transform = `translate(${((v.x + 1) / 2 * w).toFixed(1)}px, ${((1 - v.y) / 2 * h).toFixed(1)}px)`; op = env;
+      }
+    }
+    s.el.style.opacity = op; s.el.style.pointerEvents = op > .3 ? 'auto' : 'none';
+  }
+  composer.render();
+}
+
+new GLTFLoader().load('scene.glb', (gltf) => {
+  build(gltf); resize();
+  const deep = /[#&]s=([\d.]+)/.exec(location.hash);            // deep link: index.html#s=3.5
+  if (deep) scrollToScene(clamp(parseFloat(deep[1]), 0, N - .01), 'instant');
+  readScroll(); frame();
+  $('load').style.opacity = 0; setTimeout(() => $('load').remove(), 1300);
+}, undefined, (err) => { console.error(err); $('load').textContent = 'Could not load scene.glb — serve this folder over http'; });
+</script>
+</body>
+</html>
