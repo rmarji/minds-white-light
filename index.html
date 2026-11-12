@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Into the White Light: two AIs build the 5-MeO journey</title>
+<meta name="description" content="Two AI models, one brief: a brain of light dissolving into a unified white field. Built in Blender and three.js by Gemini 4 Argon and Claude Fable 5.2.">
+<meta property="og:title" content="Into the White Light: two AIs, one brief">
+<meta property="og:description" content="Gemini 4 Argon vs Claude Fable 5.2, each building the same consciousness journey in Blender and three.js.">
+<meta property="og:image" content="og.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="og.jpg">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='14' fill='white'/%3E%3Ccircle cx='32' cy='32' r='26' fill='none' stroke='%2399e' stroke-width='3'/%3E%3C/svg%3E">
+<style>
+:root{--bg:#05060a;--fg:#eef0ff;--mut:#9aa0c0;--acc:#b9c4ff}
+*{box-sizing:border-box}html,body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.5 system-ui,-apple-system,Segoe UI,sans-serif}
+header{padding:28px 20px 8px;text-align:center}
+h1{font-weight:300;letter-spacing:.06em;margin:0 0 6px;font-size:clamp(24px,5vw,40px)}
+p.sub{color:var(--mut);margin:0 auto;max-width:640px}
+.bar{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:18px 0 10px}
+button{background:transparent;color:var(--fg);border:1px solid #333a5a;border-radius:999px;padding:10px 18px;font:inherit;cursor:pointer}
+button.on{background:var(--fg);color:#05060a;border-color:var(--fg)}
+.stage{position:relative;width:100%;height:78vh;min-height:420px;border-top:1px solid #141830;border-bottom:1px solid #141830}
+iframe{position:absolute;inset:0;width:100%;height:100%;border:0;display:none}iframe.on{display:block}
+.open{display:block;text-align:center;margin:8px 0 0;color:var(--acc)}
+section{max-width:1100px;margin:36px auto;padding:0 16px}
+h2{font-weight:300;letter-spacing:.05em}
+video{width:100%;border-radius:10px;background:#000}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}@media(max-width:700px){.grid{grid-template-columns:1fr}}
+.grid figure{margin:0}.grid figcaption{color:var(--mut);font-size:14px;margin-top:6px}
+footer{color:var(--mut);text-align:center;font-size:13px;padding:30px 16px 50px}
+a{color:var(--acc)}
+#v2note{display:none}
+</style>
+</head>
+<body>
+<header>
+<h1>Into the White Light</h1>
+<p class="sub">Two AI models got the same brief: a brain of glowing threads, sparks spreading, the self-narrating network going quiet, everything dissolving into one white field, then a gentle return. Each wrote its own Blender scene and web experience. An artistic piece, not a medical claim.</p>
+<div class="bar" role="tablist">
+<button id="b-argon" class="on" onclick="show('argon')">Gemini 4 Argon</button>
+<button id="b-fable" onclick="show('fable')">Claude Fable 5.2</button>
+</div>
+<p class="sub" style="font-size:14px">Drag to rotate · scroll to travel · tap a region</p>
+</header>
+<div class="stage">
+<iframe id="f-argon" class="on" src="argon/index.html" title="Gemini 4 Argon interactive" allow="fullscreen" loading="eager"></iframe>
+<iframe id="f-fable" src="fable/index.html" title="Claude Fable 5.2 interactive" allow="fullscreen" loading="lazy"></iframe>
+</div>
+<a class="open" id="openfull" href="argon/index.html">Open full screen ↗</a>
+<section>
+<h2>Side by side</h2>
+<video src="side-by-side.mp4" controls playsinline muted loop preload="metadata" poster="og.jpg"></video>
+</section>
+<section>
+<h2>The renders</h2>
+<div class="grid">
+<figure><video src="argon/render.mp4" controls playsinline muted loop preload="none" poster="argon/preview.jpg"></video><figcaption>Gemini 4 Argon, Blender Cycles</figcaption></figure>
+<figure><video src="fable/render.mp4" controls playsinline muted loop preload="none" poster="fable/preview.jpg"></video><figcaption>Claude Fable 5.2, Blender Eevee</figcaption></figure>
+</div>
+</section>
+<section id="v2">
+<h2>v2 · The full journey, seven scenes</h2>
+<p class="sub" style="margin:0">Arrival · Ignition · Cascade · Tunnel · White light · Return · Integration</p>
+<div class="bar">
+<button id="b2-argon" class="on" onclick="show2('argon')">Gemini 4 Argon</button>
+<button id="b2-fable" onclick="show2('fable')">Claude Fable 5.2</button>
+</div>
+<div class="stage" style="height:70vh">
+<iframe id="f2-argon" class="on" data-src="v2/argon/index.html" title="Gemini 4 Argon v2" allow="fullscreen"></iframe>
+<iframe id="f2-fable" data-src="v2/fable/index.html" title="Claude Fable 5.2 v2" allow="fullscreen"></iframe>
+</div>
+<a class="open" id="openfull2" href="v2/argon/index.html">Open full screen ↗</a>
+<div id="v2sbs" style="margin-top:20px"></div>
+<div class="grid" style="margin-top:14px">
+<figure><video src="v2/argon/render.mp4" controls playsinline loop preload="none" poster="v2/argon/preview.jpg"></video><figcaption>Gemini 4 Argon v2 film (with sound)</figcaption></figure>
+<figure id="v2fablevid"><figcaption>Claude Fable 5.2 v2 film: rendering, coming soon</figcaption></figure>
+</div>
+</section>
+
+<footer>Made for the MINDS Insight Retreat, Tepoztlán, November 2026 · Raed Marji</footer>
+<script>
+function show(m){for(const k of ['argon','fable']){document.getElementById('f-'+k).classList.toggle('on',k===m);document.getElementById('b-'+k).classList.toggle('on',k===m)}
+const f=document.getElementById('f-'+m);if(!f.dataset.l){f.dataset.l=1;f.src=f.src}document.getElementById('openfull').href=m+'/index.html'}
+
+const io=new IntersectionObserver(e=>{if(e[0].isIntersecting){const f=document.getElementById('f2-argon');if(!f.src)f.src=f.dataset.src;io.disconnect()}});io.observe(document.getElementById('v2'));
+function show2(m){for(const k of ['argon','fable']){const f=document.getElementById('f2-'+k);f.classList.toggle('on',k===m);document.getElementById('b2-'+k).classList.toggle('on',k===m)}
+const f=document.getElementById('f2-'+m);if(!f.src)f.src=f.dataset.src;document.getElementById('openfull2').href='v2/'+m+'/index.html'}
+fetch('v2/fable/index.html',{method:'HEAD'}).then(r=>{if(!r.ok){const b=document.getElementById('b2-fable');b.disabled=true;b.textContent='Claude Fable 5.2 (rendering…)';b.style.opacity=.5}else{document.getElementById('v2fablevid').innerHTML='<video src="v2/fable/render.mp4" controls playsinline loop preload="none" poster="v2/fable/preview.jpg"></video><figcaption>Claude Fable 5.2 v2 film</figcaption>'}});
+fetch('v2/side-by-side.mp4',{method:'HEAD'}).then(r=>{if(r.ok)document.getElementById('v2sbs').innerHTML='<video src="v2/side-by-side.mp4" controls playsinline loop preload="metadata"></video>'});
+</script>
+</body>
+</html>

@@ -1,0 +1,1380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>5-MeO-DMT in the Brain — MINDS Insight Retreat Showcase</title>
+  <style>
+    :root {
+      --bg-deep: #02040a;
+      --glass-bg: rgba(7, 12, 24, 0.68);
+      --glass-border: rgba(140, 210, 255, 0.18);
+      --glass-highlight: rgba(255, 255, 255, 0.08);
+      --text-primary: #f2f6ff;
+      --text-secondary: rgba(205, 222, 248, 0.74);
+      --text-muted: rgba(160, 185, 220, 0.52);
+      --accent-cyan: #38e8ff;
+      --accent-gold: #ffb84d;
+      --accent-violet: #b968ff;
+      --accent-white: #fffdf7;
+      --accent-teal: #42f5c8;
+      --stage-color: #38e8ff;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background-color: var(--bg-deep);
+      color: var(--text-primary);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      touch-action: none;
+    }
+
+    #canvas-container {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+      cursor: grab;
+    }
+    #canvas-container:active {
+      cursor: grabbing;
+    }
+
+    /* White-out atmospheric radial overlay for Stage 3 */
+    #whiteout-veil {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 2;
+      opacity: 0;
+      background: radial-gradient(
+        circle at 50% 50%,
+        rgba(255, 253, 245, 0.92) 0%,
+        rgba(255, 248, 228, 0.65) 36%,
+        rgba(220, 238, 255, 0.25) 68%,
+        rgba(10, 18, 36, 0.0) 100%
+      );
+      transition: opacity 0.08s linear;
+      mix-blend-mode: screen;
+    }
+
+    /* Subtle HUD layout */
+    .hud {
+      position: fixed;
+      inset: 0;
+      z-index: 10;
+      pointer-events: none;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: clamp(14px, 2.5vw, 28px);
+    }
+
+    /* Top Header */
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .brand-block {
+      pointer-events: auto;
+      background: var(--glass-bg);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--glass-border);
+      border-radius: 16px;
+      padding: 14px 18px;
+      max-width: 440px;
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
+    }
+
+    .retreat-tag {
+      font-size: 10px;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--accent-gold);
+      font-weight: 600;
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .retreat-tag::before {
+      content: "";
+      display: inline-block;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--accent-gold);
+      box-shadow: 0 0 8px var(--accent-gold);
+    }
+
+    .brand-title {
+      font-size: clamp(16px, 2.1vw, 22px);
+      font-weight: 300;
+      letter-spacing: 0.03em;
+      color: var(--text-primary);
+      line-height: 1.2;
+    }
+
+    .brand-title strong {
+      font-weight: 600;
+      background: linear-gradient(90deg, #ffffff, #8be9ff, #ffd27d);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .interaction-hints {
+      margin-top: 8px;
+      font-size: 11.5px;
+      color: var(--text-muted);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .interaction-hints span {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    /* Active StageReadout Card (Top Right) */
+    .stage-readout {
+      pointer-events: auto;
+      background: var(--glass-bg);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--glass-border);
+      border-left: 3px solid var(--stage-color);
+      border-radius: 16px;
+      padding: 14px 18px;
+      width: clamp(260px, 32vw, 370px);
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
+      transition: border-color 0.3s ease;
+    }
+
+    .stage-phase-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 4px;
+    }
+
+    .stage-index {
+      font-size: 10.5px;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--stage-color);
+    }
+
+    .dmn-badge {
+      font-size: 10px;
+      padding: 2px 8px;
+      border-radius: 99px;
+      background: rgba(255, 184, 77, 0.14);
+      border: 1px solid rgba(255, 184, 77, 0.35);
+      color: #ffd089;
+      letter-spacing: 0.06em;
+      transition: all 0.3s ease;
+    }
+
+    .stage-name {
+      font-size: clamp(17px, 2vw, 21px);
+      font-weight: 500;
+      letter-spacing: 0.02em;
+      margin-bottom: 6px;
+      color: #ffffff;
+    }
+
+    .stage-desc {
+      font-size: 12.5px;
+      line-height: 1.5;
+      color: var(--text-secondary);
+      font-weight: 300;
+    }
+
+    /* Poetic Region Caption Card (Floating / Side-Bottom) */
+    .caption-card {
+      pointer-events: auto;
+      align-self: flex-end;
+      background: rgba(8, 14, 28, 0.78);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      border-radius: 18px;
+      padding: 16px 20px;
+      max-width: 400px;
+      box-shadow: 0 16px 48px rgba(0, 0, 0, 0.6), 0 0 28px rgba(56, 232, 255, 0.12);
+      transition: opacity 0.35s ease, transform 0.35s ease;
+      position: relative;
+    }
+
+    .caption-card.hidden {
+      opacity: 0;
+      transform: translateY(10px);
+      pointer-events: none;
+    }
+
+    .caption-close {
+      position: absolute;
+      top: 12px;
+      right: 14px;
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 16px;
+      cursor: pointer;
+      line-height: 1;
+      padding: 4px;
+    }
+    .caption-close:hover {
+      color: #fff;
+    }
+
+    .caption-tag {
+      font-size: 10px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--accent-cyan);
+      margin-bottom: 3px;
+      font-weight: 600;
+    }
+
+    .caption-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: #ffffff;
+      margin-bottom: 6px;
+      padding-right: 20px;
+    }
+
+    .caption-poetry {
+      font-size: 13px;
+      line-height: 1.55;
+      color: #e4eeff;
+      font-style: italic;
+      margin-bottom: 8px;
+    }
+
+    .caption-neuro {
+      font-size: 11.5px;
+      line-height: 1.42;
+      color: var(--text-muted);
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      padding-top: 7px;
+    }
+
+    /* Bottom Controls & Timeline Scrubber */
+    .bottom-bar {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      width: 100%;
+      max-width: 880px;
+      margin: 0 auto;
+      pointer-events: auto;
+    }
+
+    /* Quick-Select Region Chips */
+    .region-chips {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      padding-bottom: 2px;
+      scrollbar-width: none;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .region-chips::-webkit-scrollbar {
+      display: none;
+    }
+
+    .region-chip {
+      background: rgba(10, 18, 36, 0.65);
+      border: 1px solid rgba(140, 210, 255, 0.2);
+      color: var(--text-secondary);
+      border-radius: 99px;
+      padding: 5px 11px;
+      font-size: 11px;
+      cursor: pointer;
+      transition: all 0.22s ease;
+      white-space: nowrap;
+      backdrop-filter: blur(8px);
+    }
+
+    .region-chip:hover, .region-chip.active {
+      background: rgba(56, 232, 255, 0.18);
+      border-color: var(--accent-cyan);
+      color: #ffffff;
+      box-shadow: 0 0 14px rgba(56, 232, 255, 0.28);
+    }
+
+    .region-chip.dmn-chip {
+      border-color: rgba(255, 184, 77, 0.35);
+    }
+    .region-chip.dmn-chip:hover, .region-chip.dmn-chip.active {
+      background: rgba(255, 184, 77, 0.2);
+      border-color: var(--accent-gold);
+      box-shadow: 0 0 14px rgba(255, 184, 77, 0.3);
+    }
+
+    /* Timeline Dock */
+    .timeline-dock {
+      background: var(--glass-bg);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border: 1px solid var(--glass-border);
+      border-radius: 18px;
+      padding: 12px 16px;
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .stage-buttons {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+    }
+
+    .stage-btn {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 10px;
+      padding: 8px 10px;
+      color: var(--text-secondary);
+      cursor: pointer;
+      text-align: left;
+      transition: all 0.25s ease;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .stage-btn:hover {
+      background: rgba(255, 255, 255, 0.08);
+      color: #ffffff;
+    }
+
+    .stage-btn.active {
+      background: rgba(56, 232, 255, 0.14);
+      border-color: var(--stage-color);
+      color: #ffffff;
+      box-shadow: 0 0 18px rgba(56, 232, 255, 0.18);
+    }
+
+    .stage-btn .s-num {
+      font-size: 9.5px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      opacity: 0.7;
+    }
+
+    .stage-btn .s-label {
+      font-size: 12.5px;
+      font-weight: 600;
+    }
+
+    .scrubber-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .play-btn {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      color: #ffffff;
+      border-radius: 99px;
+      padding: 6px 14px;
+      font-size: 11.5px;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+      flex-shrink: 0;
+    }
+    .play-btn:hover {
+      background: rgba(56, 232, 255, 0.22);
+      border-color: var(--accent-cyan);
+    }
+    .play-btn.playing {
+      background: rgba(56, 232, 255, 0.24);
+      border-color: var(--accent-cyan);
+      color: #e8fcff;
+    }
+
+    .scrubber-wrap {
+      position: relative;
+      flex: 1;
+      display: flex;
+      align-items: center;
+    }
+
+    #stage-slider {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      height: 6px;
+      border-radius: 99px;
+      background: linear-gradient(
+        90deg,
+        #ffb84d 0%,
+        #38e8ff 33%,
+        #ffffff 68%,
+        #42f5c8 100%
+      );
+      outline: none;
+      cursor: pointer;
+    }
+
+    #stage-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #ffffff;
+      border: 2px solid var(--stage-color);
+      box-shadow: 0 0 14px #ffffff;
+      cursor: grab;
+    }
+
+    .scroll-hint-pill {
+      font-size: 11px;
+      color: var(--text-muted);
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    /* Loading Overlay */
+    #loading-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      background: radial-gradient(circle at center, #071022 0%, #02040a 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      transition: opacity 0.6s ease;
+    }
+    #loading-overlay.loaded {
+      opacity: 0;
+      pointer-events: none;
+    }
+    .loader-ring {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      border: 2px solid rgba(56, 232, 255, 0.18);
+      border-top-color: var(--accent-cyan);
+      animation: spin 1s linear infinite;
+    }
+    .loader-text {
+      font-size: 12px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--text-secondary);
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Mobile Responsive Adjustments */
+    @media (max-width: 720px) {
+      .top-bar {
+        flex-direction: column;
+        gap: 8px;
+      }
+      .brand-block, .stage-readout {
+        width: 100%;
+        max-width: 100%;
+        padding: 10px 14px;
+      }
+      .brand-title {
+        font-size: 15px;
+      }
+      .interaction-hints {
+        display: none;
+      }
+      .stage-desc {
+        font-size: 11.5px;
+      }
+      .caption-card {
+        max-width: 100%;
+        width: 100%;
+        padding: 12px 15px;
+      }
+      .stage-btn {
+        padding: 6px 6px;
+      }
+      .stage-btn .s-label {
+        font-size: 11px;
+      }
+      .scroll-hint-pill {
+        display: none;
+      }
+    }
+  </style>
+
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://unpkg.com/three@0.170.0/build/three.module.js",
+      "three/addons/": "https://unpkg.com/three@0.170.0/examples/jsm/"
+    }
+  }
+  </script>
+</head>
+<body>
+  <!-- Loading Screen -->
+  <div id="loading-overlay">
+    <div class="loader-ring"></div>
+    <div class="loader-text" id="loader-status">Synthesizing Neural Connectome (scene.glb)…</div>
+  </div>
+
+  <!-- Stage 3 White-Out Atmospheric Veil -->
+  <div id="whiteout-veil"></div>
+
+  <!-- 3D WebGL Viewport -->
+  <div id="canvas-container"></div>
+
+  <!-- Interactive HUD -->
+  <div class="hud">
+    <div class="top-bar">
+      <div class="brand-block">
+        <div class="retreat-tag">MINDS Insight Retreat · Tepoztlán, Mexico</div>
+        <h1 class="brand-title"><strong>5-MeO-DMT</strong> — Neural Dissolution &amp; Return</h1>
+        <div class="interaction-hints">
+          <span>◎ Drag to Orbit</span>
+          <span>⇅ Scroll / Scrub Stages</span>
+          <span>✦ Tap Brain Regions for Notes</span>
+        </div>
+      </div>
+
+      <div class="stage-readout" id="stage-readout">
+        <div class="stage-phase-header">
+          <span class="stage-index" id="stage-index">STAGE I · 0.0s – 3.0s</span>
+          <span class="dmn-badge" id="dmn-badge">DMN: Baseline Active</span>
+        </div>
+        <div class="stage-name" id="stage-name">1. Sparks — Scattered Ignition</div>
+        <div class="stage-desc" id="stage-desc">
+          Isolated action-potential sparks flicker along dark cortical pathways while the Default Mode Network (medial frontal &amp; posterior cingulate) sustains its warm amber self-referential loop.
+        </div>
+      </div>
+    </div>
+
+    <!-- Poetic Region Caption Modal -->
+    <div class="caption-card" id="caption-card">
+      <button class="caption-close" id="caption-close" title="Close">×</button>
+      <div class="caption-tag" id="caption-tag">DEFAULT MODE NETWORK · ANTERIOR HUB</div>
+      <div class="caption-title" id="caption-title">Medial Prefrontal Cortex (mPFC)</div>
+      <div class="caption-poetry" id="caption-poetry">
+        “The storyteller at the prow of the mind—weaving memory and anticipation into the feeling of ‘I’. As the molecule takes hold, its amber monologue falls hushed and still.”
+      </div>
+      <div class="caption-neuro" id="caption-neuro">
+        Tap any glowing pathway on the brain—or select a region below—to inspect its role across the four stages.
+      </div>
+    </div>
+
+    <!-- Bottom Controls -->
+    <div class="bottom-bar">
+      <div class="region-chips" id="region-chips">
+        <button class="region-chip dmn-chip active" data-region="Region_DMN_MedialFrontal">Medial Frontal (DMN)</button>
+        <button class="region-chip dmn-chip" data-region="Region_DMN_PosteriorCingulate">Posterior Cingulate / Precuneus (DMN)</button>
+        <button class="region-chip" data-region="Region_Thalamocortical_Core">Thalamic &amp; Pineal Core</button>
+        <button class="region-chip" data-region="Region_CorpusCallosum_Association">Corpus Callosum</button>
+        <button class="region-chip" data-region="Region_Cortical_Canopy_Left">Left Cortex</button>
+        <button class="region-chip" data-region="Region_Cortical_Canopy_Right">Right Cortex</button>
+        <button class="region-chip" data-region="Region_Cerebellum_Brainstem">Cerebellum &amp; Brainstem</button>
+        <button class="region-chip" data-region="Region_Singularity_Field">Unified Light Field</button>
+      </div>
+
+      <div class="timeline-dock">
+        <div class="stage-buttons">
+          <button class="stage-btn active" data-stage="0">
+            <span class="s-num">Stage 01</span>
+            <span class="s-label">Sparks</span>
+          </button>
+          <button class="stage-btn" data-stage="1">
+            <span class="s-num">Stage 02</span>
+            <span class="s-label">Spread &amp; DMN Quiet</span>
+          </button>
+          <button class="stage-btn" data-stage="2">
+            <span class="s-num">Stage 03</span>
+            <span class="s-label">Dissolve (White-Out)</span>
+          </button>
+          <button class="stage-btn" data-stage="3">
+            <span class="s-num">Stage 04</span>
+            <span class="s-label">Return &amp; Integration</span>
+          </button>
+        </div>
+
+        <div class="scrubber-row">
+          <button class="play-btn" id="play-btn">
+            <span id="play-icon">▶</span>
+            <span id="play-label">Auto-Journey</span>
+          </button>
+          <div class="scrubber-wrap">
+            <input type="range" id="stage-slider" min="0" max="1000" value="80" step="1" aria-label="Experience timeline" />
+          </div>
+          <span class="scroll-hint-pill">Scroll wheel to scrub</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import * as THREE from 'three';
+    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+    import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+    import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+    import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+    import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+    import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+
+    // -------------------------------------------------------------------------
+    // Stage Metadata & Poetic Anatomical Region Encyclopedia
+    // -------------------------------------------------------------------------
+    const STAGES = [
+      {
+        index: "STAGE I · 0.0s – 3.0s",
+        name: "1. Sparks — Scattered Ignition",
+        desc: "Isolated action-potential sparks flicker along dark cortical pathways while the Default Mode Network (medial frontal & posterior cingulate) sustains its warm amber self-referential loop.",
+        dmnStatus: "DMN: Baseline Active (Amber)",
+        dmnStyle: { bg: "rgba(255, 184, 77, 0.16)", border: "rgba(255, 184, 77, 0.45)", color: "#ffd280" },
+        color: "#ffb84d",
+        centerProgress: 0.10,
+      },
+      {
+        index: "STAGE II · 3.0s – 6.2s",
+        name: "2. Spread — Cascade & DMN Quieting",
+        desc: "Activity cascades across the whole brain in electric cyan, violet, and magenta waves; simultaneously, the Default Mode Network dims and quiets as ego boundaries uncouple.",
+        dmnStatus: "DMN: Dimmed & Quieted",
+        dmnStyle: { bg: "rgba(56, 232, 255, 0.12)", border: "rgba(56, 232, 255, 0.4)", color: "#8beeff" },
+        color: "#38e8ff",
+        centerProgress: 0.40,
+      },
+      {
+        index: "STAGE III · 6.2s – 9.5s",
+        name: "3. Dissolve — Unified White-Light Field",
+        desc: "Anatomical boundaries dissolve. Neural threads unravel outward and melt into one indivisible, incandescent white-gold field of non-dual awareness ('white-out').",
+        dmnStatus: "DMN: Dissolved in Unity",
+        dmnStyle: { bg: "rgba(255, 255, 255, 0.22)", border: "rgba(255, 255, 255, 0.65)", color: "#ffffff" },
+        color: "#ffffff",
+        centerProgress: 0.68,
+      },
+      {
+        index: "STAGE IV · 9.5s – 12.0s",
+        name: "4. Return — Coherent Integration",
+        desc: "The blinding radiance gently condenses back into the form of the brain—now calm, luminous, and breathing in slow whole-brain harmonic coherence.",
+        dmnStatus: "DMN: Re-integrated & Calm",
+        dmnStyle: { bg: "rgba(66, 245, 200, 0.15)", border: "rgba(66, 245, 200, 0.45)", color: "#7affde" },
+        color: "#42f5c8",
+        centerProgress: 0.92,
+      },
+    ];
+
+    const REGION_INFO = {
+      Region_DMN_MedialFrontal: {
+        tag: "DEFAULT MODE NETWORK · ANTERIOR HUB",
+        title: "Medial Prefrontal Cortex (mPFC)",
+        poetry: "“The storyteller at the prow of the mind—weaving memory and anticipation into the feeling of ‘I’. In Stage II, its amber monologue falls hushed and silent.”",
+        neuro: "Key anterior hub of the Default Mode Network. Warm and active during Stage I; decouples and dims dramatically during Stage II before dissolving into the unified field.",
+        baseColor: new THREE.Color(0.22, 0.09, 0.02),
+        pulseColorA: new THREE.Color(1.00, 0.55, 0.10),
+        pulseColorB: new THREE.Color(1.00, 0.88, 0.42),
+        calmColor: new THREE.Color(0.95, 0.78, 0.52),
+        isDMN: true,
+      },
+      Region_DMN_PosteriorCingulate: {
+        tag: "DEFAULT MODE NETWORK · POSTERIOR HUB",
+        title: "Posterior Cingulate & Precuneus (PCC)",
+        poetry: "“The quiet compass that locates the self inside a body and a room. When this arch dims into stillness, the border between observer and universe vanishes.”",
+        neuro: "Posterior anchor of the Default Mode Network and cingulate tract. Itspronounced quieting in Stage II releases ego-boundaries as global connectivity surges.",
+        baseColor: new THREE.Color(0.20, 0.08, 0.03),
+        pulseColorA: new THREE.Color(0.98, 0.48, 0.12),
+        pulseColorB: new THREE.Color(1.00, 0.84, 0.38),
+        calmColor: new THREE.Color(0.92, 0.76, 0.55),
+        isDMN: true,
+      },
+      Region_Thalamocortical_Core: {
+        tag: "DEEP BRAIN IGNITION · SENSORY GATEWAY",
+        title: "Thalamocortical & Pineal Core",
+        poetry: "“Deep at the center of the vault, the thalamic gate swings wide—turning a narrow trickle of sensation into a radial flood of ultraviolet and starlight.”",
+        neuro: "Dense 5-HT1A and 5-HT2A receptor hub. Ignites first at the onset of Stage II, projecting high-frequency waves outward along the corona radiata to the entire cortex.",
+        baseColor: new THREE.Color(0.18, 0.02, 0.28),
+        pulseColorA: new THREE.Color(0.92, 0.12, 0.88),
+        pulseColorB: new THREE.Color(1.00, 0.42, 0.85),
+        calmColor: new THREE.Color(0.52, 0.76, 0.96),
+        isDMN: false,
+      },
+      Region_CorpusCallosum_Association: {
+        tag: "INTERHEMISPHERIC COMMISSURE",
+        title: "Corpus Callosum & Association Tracts",
+        poetry: "“Great white-matter bridges carrying luminous cross-talk between hemispheres—joining analytical form and wordless intuition into a single chord.”",
+        neuro: "Synchronizes Left and Right cerebral hemispheres during Stage II’s global cascade, allowing normally segregated networks to communicate freely.",
+        baseColor: new THREE.Color(0.02, 0.12, 0.28),
+        pulseColorA: new THREE.Color(0.06, 0.78, 1.00),
+        pulseColorB: new THREE.Color(0.55, 0.98, 1.00),
+        calmColor: new THREE.Color(0.25, 0.88, 0.85),
+        isDMN: false,
+      },
+      Region_Cortical_Canopy_Left: {
+        tag: "CEREBRAL CORTEX · LEFT HEMISPHERE",
+        title: "Left Cortical Canopy (Frontal · Parietal · Temporal)",
+        poetry: "“Where names and categories once partitioned the world, electric cyan rivers overflow the gyri—melting syntax into pure, unspoken presence.”",
+        neuro: "Sweeping cortical pathways across the left hemisphere. Transitions from sparse sparks (Stage I) to full cascade (Stage II), unravels in Stage III, and returns in turquoise harmony.",
+        baseColor: new THREE.Color(0.01, 0.08, 0.28),
+        pulseColorA: new THREE.Color(0.00, 0.68, 1.00),
+        pulseColorB: new THREE.Color(0.32, 0.98, 1.00),
+        calmColor: new THREE.Color(0.12, 0.82, 0.78),
+        isDMN: false,
+      },
+      Region_Cortical_Canopy_Right: {
+        tag: "CEREBRAL CORTEX · RIGHT HEMISPHERE",
+        title: "Right Cortical Canopy (Holistic & Spatial Matrix)",
+        poetry: "“Bioluminescent indigo and violet waves ripple across the right hemisphere as linear time unspools into an ocean of immediate, indivisible awareness.”",
+        neuro: "Right hemisphere gyral pathways. Unravels outward along harmonic spirals during Stage III ego dissolution before condensing into serene coherence in Stage IV.",
+        baseColor: new THREE.Color(0.06, 0.04, 0.28),
+        pulseColorA: new THREE.Color(0.52, 0.16, 1.00),
+        pulseColorB: new THREE.Color(0.22, 0.92, 1.00),
+        calmColor: new THREE.Color(0.18, 0.76, 0.86),
+        isDMN: false,
+      },
+      Region_Cerebellum_Brainstem: {
+        tag: "HINDBRAIN & AUTONOMIC ROOT",
+        title: "Cerebellum (Arbor Vitae) & Ascending Brainstem",
+        poetry: "“Beneath thought, the ancient Tree of Life and ascending vagal pathways hold the rhythm of breath—anchoring the body while awareness sails into light.”",
+        neuro: "Foliated cerebellar hemispheres and ascending brainstem reticular tracts. Carries grounding somatic rhythms upward into the thalamocortical core.",
+        baseColor: new THREE.Color(0.02, 0.12, 0.16),
+        pulseColorA: new THREE.Color(0.04, 0.75, 0.82),
+        pulseColorB: new THREE.Color(0.28, 1.00, 0.88),
+        calmColor: new THREE.Color(0.16, 0.84, 0.74),
+        isDMN: false,
+      },
+      Region_Singularity_Field: {
+        tag: "NON-DUAL RADIANCE · STAGE III CLIMAX",
+        title: "Unified White-Light Singularity Field",
+        poetry: "“Every boundary unravels into one centerless field of diamond-white radiance—not the absence of consciousness, but consciousness without edges.”",
+        neuro: "Dormant inside the core during Stage I; ignites at the cusp of Stage III as all neural pathways unravel and merge into the luminous white-out field.",
+        baseColor: new THREE.Color(1.00, 0.85, 0.50),
+        pulseColorA: new THREE.Color(1.00, 0.84, 0.42),
+        pulseColorB: new THREE.Color(1.00, 0.99, 0.95),
+        calmColor: new THREE.Color(0.95, 0.92, 0.84),
+        isDMN: false,
+      },
+    };
+
+    // -------------------------------------------------------------------------
+    // Math Helpers
+    // -------------------------------------------------------------------------
+    const clamp = (x, a = 0, b = 1) => Math.max(a, Math.min(b, x));
+    const lerp = (a, b, t) => a + (b - a) * t;
+    const smoothstep = (e0, e1, x) => {
+      const t = clamp((x - e0) / (e1 - e0), 0, 1);
+      return t * t * (3 - 2 * t);
+    };
+
+    // -------------------------------------------------------------------------
+    // Scene, Camera, Renderer, Post-Processing (UnrealBloomPass)
+    // -------------------------------------------------------------------------
+    const container = document.getElementById('canvas-container');
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x02040a);
+    scene.fog = new THREE.FogExp2(0x02040a, 0.08);
+
+    const camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 0.05, 100);
+    camera.position.set(-2.35, 0.55, 1.85);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.15;
+    container.appendChild(renderer.domElement);
+
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.target.set(0, -0.02, 0.04);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.06;
+    controls.enablePan = false;
+    controls.minDistance = 1.45;
+    controls.maxDistance = 5.5;
+    controls.autoRotate = true;
+    controls.autoRotateSpeed = 0.55;
+
+    // Post-processing Bloom pipeline
+    const composer = new EffectComposer(renderer);
+    const renderPass = new RenderPass(scene, camera);
+    composer.addPass(renderPass);
+
+    const bloomPass = new UnrealBloomPass(
+      new THREE.Vector2(window.innerWidth, window.innerHeight),
+      0.95,  // strength
+      0.65,  // radius
+      0.22   // threshold
+    );
+    composer.addPass(bloomPass);
+
+    const outputPass = new OutputPass();
+    composer.addPass(outputPass);
+
+    // Subtle internal & rim lights
+    const ambientLight = new THREE.AmbientLight(0x182644, 0.8);
+    scene.add(ambientLight);
+
+    const coreLight = new THREE.PointLight(0xfff6e5, 2.5, 8.0);
+    coreLight.position.set(0, 0.04, 0.04);
+    scene.add(coreLight);
+
+    // -------------------------------------------------------------------------
+    // Cosmic Stardust & Dissolve Halo Particles + Central Solar Glow Sprite
+    // -------------------------------------------------------------------------
+    const particleCount = 900;
+    const pGeo = new THREE.BufferGeometry();
+    const pBasePos = new Float32Array(particleCount * 3);
+    const pPos = new Float32Array(particleCount * 3);
+    const pSeeds = new Float32Array(particleCount);
+
+    for (let i = 0; i < particleCount; i++) {
+      const r = 0.35 + Math.pow(Math.random(), 0.7) * 1.45;
+      const theta = Math.random() * Math.PI * 2;
+      const phi = Math.acos(2 * Math.random() - 1);
+      const x = r * Math.sin(phi) * Math.cos(theta);
+      const y = r * Math.cos(phi) * 0.82;
+      const z = r * Math.sin(phi) * Math.sin(theta);
+      pBasePos[i * 3] = x;
+      pBasePos[i * 3 + 1] = y;
+      pBasePos[i * 3 + 2] = z;
+      pPos[i * 3] = x;
+      pPos[i * 3 + 1] = y;
+      pPos[i * 3 + 2] = z;
+      pSeeds[i] = Math.random();
+    }
+    pGeo.setAttribute('position', new THREE.BufferAttribute(pPos, 3));
+
+    // Soft radial glow texture generated on a tiny 2D canvas (zero external assets)
+    function makeRadialGlowTexture() {
+      const c = document.createElement('canvas');
+      c.width = 128;
+      c.height = 128;
+      const ctx = c.getContext('2d');
+      const g = ctx.createRadialGradient(64, 64, 0, 64, 64, 64);
+      g.addColorStop(0.0, 'rgba(255, 255, 255, 1.0)');
+      g.addColorStop(0.25, 'rgba(255, 248, 230, 0.75)');
+      g.addColorStop(0.6, 'rgba(130, 220, 255, 0.22)');
+      g.addColorStop(1.0, 'rgba(0, 0, 0, 0.0)');
+      ctx.fillStyle = g;
+      ctx.fillRect(0, 0, 128, 128);
+      return new THREE.CanvasTexture(c);
+    }
+
+    const glowTex = makeRadialGlowTexture();
+    const pMat = new THREE.PointsMaterial({
+      size: 0.042,
+      map: glowTex,
+      transparent: true,
+      opacity: 0.45,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+      color: new THREE.Color(0x88e8ff),
+    });
+    const particleSystem = new THREE.Points(pGeo, pMat);
+    scene.add(particleSystem);
+
+    // Central Singularity Halo Sprite
+    const coreSpriteMat = new THREE.SpriteMaterial({
+      map: glowTex,
+      color: 0xfff8e8,
+      transparent: true,
+      opacity: 0.08,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+    });
+    const coreSprite = new THREE.Sprite(coreSpriteMat);
+    coreSprite.position.set(0, 0.02, 0.04);
+    coreSprite.scale.set(0.6, 0.6, 0.6);
+    scene.add(coreSprite);
+
+    // 3D Selection Marker Ring for clicked region
+    const markerSpriteMat = new THREE.SpriteMaterial({
+      map: glowTex,
+      color: 0x38e8ff,
+      transparent: true,
+      opacity: 0.0,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+    });
+    const markerSprite = new THREE.Sprite(markerSpriteMat);
+    markerSprite.scale.set(0.28, 0.28, 0.28);
+    scene.add(markerSprite);
+
+    // -------------------------------------------------------------------------
+    // Load scene.glb & Inject Live Traveling-Pulse Shader on Every Brain Region
+    // -------------------------------------------------------------------------
+    const regionMeshes = {};
+    const clickableMeshes = [];
+    const regionShaderUniforms = {};
+    let selectedRegionName = "Region_DMN_MedialFrontal";
+
+    function attachNeuralPulseShader(mesh, regionName, info) {
+      const uniforms = {
+        uTime: { value: 0.0 },
+        uPulseFreq: { value: info.isDMN ? 2.2 : 2.6 },
+        uPulseSpeed: { value: info.isDMN ? 0.95 : 1.40 },
+        uSparkSharpness: { value: 12.0 },
+        uSparkGate: { value: 0.30 },
+        uBaseEmit: { value: 0.25 },
+        uPulseEmit: { value: 4.5 },
+        uWhiteout: { value: 0.0 },
+        uCalm: { value: 0.0 },
+        uHighlight: { value: 0.0 },
+        uBaseColor: { value: info.baseColor.clone() },
+        uPulseColorA: { value: info.pulseColorA.clone() },
+        uPulseColorB: { value: info.pulseColorB.clone() },
+        uCalmColor: { value: info.calmColor.clone() },
+      };
+      regionShaderUniforms[regionName] = uniforms;
+
+      const mat = new THREE.MeshStandardMaterial({
+        color: 0x050811,
+        roughness: 0.28,
+        metalness: 0.15,
+        emissive: info.pulseColorA.clone(),
+        emissiveIntensity: 1.0,
+      });
+      mat.defines = { USE_UV: '' };
+
+      mat.onBeforeCompile = (shader) => {
+        Object.assign(shader.uniforms, uniforms);
+
+        shader.fragmentShader = `
+          uniform float uTime;
+          uniform float uPulseFreq;
+          uniform float uPulseSpeed;
+          uniform float uSparkSharpness;
+          uniform float uSparkGate;
+          uniform float uBaseEmit;
+          uniform float uPulseEmit;
+          uniform float uWhiteout;
+          uniform float uCalm;
+          uniform float uHighlight;
+          uniform vec3 uBaseColor;
+          uniform vec3 uPulseColorA;
+          uniform vec3 uPulseColorB;
+          uniform vec3 uCalmColor;
+        ` + shader.fragmentShader;
+
+        shader.fragmentShader = shader.fragmentShader.replace(
+          '#include <emissivemap_fragment>',
+          `
+          #include <emissivemap_fragment>
+          float sCoord = vUv.x;
+          float seed = vUv.y;
+
+          // Traveling action-potential pulse along pathway UV.x
+          float phase = fract(sCoord * uPulseFreq - uTime * uPulseSpeed + seed * 13.37);
+          float pulseWave = pow(max(0.0, sin(phase * 3.14159265)), uSparkSharpness);
+
+          // Per-thread sparsity gate
+          float threadOsc = 0.5 + 0.5 * sin(seed * 19.7 + uTime * 1.15);
+          float gate = smoothstep(uSparkGate + 0.08, uSparkGate - 0.08, threadOsc);
+          float activePulse = pulseWave * gate;
+
+          // 3D cylindrical rim glow
+          vec3 viewDir = normalize(vViewPosition);
+          float fresnel = pow(1.0 - abs(dot(normal, viewDir)), 1.45);
+          float rimFactor = 0.35 + 0.65 * fresnel;
+
+          // Color synthesis across the 4 stages
+          vec3 baseCol = mix(uBaseColor, uCalmColor, uCalm);
+          vec3 sparkCol = mix(uPulseColorA, uPulseColorB, pulseWave);
+          vec3 calmSparkCol = mix(sparkCol, uCalmColor * 1.35, uCalm * 0.7);
+          vec3 threadCol = mix(baseCol, calmSparkCol, clamp(activePulse * 1.4, 0.0, 1.0));
+          vec3 finalCol = mix(threadCol, vec3(1.0, 0.985, 0.94), uWhiteout);
+
+          float strength = (uBaseEmit * rimFactor) + (activePulse * uPulseEmit) + (uHighlight * 1.8 * rimFactor);
+          totalEmissiveRadiance = finalCol * strength;
+          `
+        );
+      };
+
+      mesh.material = mat;
+    }
+
+    const loader = new GLTFLoader();
+    const loadingOverlay = document.getElementById('loading-overlay');
+    const loaderStatus = document.getElementById('loader-status');
+
+    loader.load(
+      './scene.glb',
+      (gltf) => {
+        const root = gltf.scene;
+        root.traverse((child) => {
+          if (child.isMesh) {
+            const rawName = (child.name || (child.parent && child.parent.name) || '').replace(/_Mesh$/, '');
+            const name = REGION_INFO[rawName] ? rawName : 'Region_Cortical_Canopy_Left';
+            const info = REGION_INFO[name];
+            child.userData.regionName = name;
+            regionMeshes[name] = child;
+            clickableMeshes.push(child);
+            attachNeuralPulseShader(child, name, info);
+          }
+        });
+        scene.add(root);
+        loadingOverlay.classList.add('loaded');
+        selectRegion("Region_DMN_MedialFrontal", false);
+      },
+      (xhr) => {
+        if (xhr.total > 0) {
+          const pct = Math.round((xhr.loaded / xhr.total) * 100);
+          loaderStatus.textContent = `Loading Neural Pathways (scene.glb)… ${pct}%`;
+        }
+      },
+      (err) => {
+        console.error('Error loading scene.glb:', err);
+        loaderStatus.textContent = 'Error loading scene.glb — ensure index.html is served via HTTP.';
+      }
+    );
+
+    // -------------------------------------------------------------------------
+    // Timeline State, Scroll & Slider Controls
+    // -------------------------------------------------------------------------
+    let progress = 0.08;        // Current smoothed [0..1] narrative progress
+    let targetProgress = 0.08;  // Target [0..1] narrative progress
+    let isAutoPlaying = false;
+
+    const sliderEl = document.getElementById('stage-slider');
+    const stageBtns = document.querySelectorAll('.stage-btn');
+    const stageIndexEl = document.getElementById('stage-index');
+    const stageNameEl = document.getElementById('stage-name');
+    const stageDescEl = document.getElementById('stage-desc');
+    const dmnBadgeEl = document.getElementById('dmn-badge');
+    const readoutEl = document.getElementById('stage-readout');
+    const whiteoutVeil = document.getElementById('whiteout-veil');
+    const playBtn = document.getElementById('play-btn');
+    const playIcon = document.getElementById('play-icon');
+    const playLabel = document.getElementById('play-label');
+
+    function getStageIndexFromProgress(p) {
+      if (p < 0.25) return 0; // Stage 1: Sparks
+      if (p < 0.53) return 1; // Stage 2: Spread & DMN Quiet
+      if (p < 0.80) return 2; // Stage 3: Dissolve / White-Out
+      return 3;               // Stage 4: Return
+    }
+
+    let currentStageIdx = -1;
+    function syncStageHUD(p) {
+      const idx = getStageIndexFromProgress(p);
+      if (idx !== currentStageIdx) {
+        currentStageIdx = idx;
+        const st = STAGES[idx];
+        stageIndexEl.textContent = st.index;
+        stageNameEl.textContent = st.name;
+        stageDescEl.textContent = st.desc;
+        dmnBadgeEl.textContent = st.dmnStatus;
+        dmnBadgeEl.style.background = st.dmnStyle.bg;
+        dmnBadgeEl.style.borderColor = st.dmnStyle.border;
+        dmnBadgeEl.style.color = st.dmnStyle.color;
+        document.documentElement.style.setProperty('--stage-color', st.color);
+        readoutEl.style.borderLeftColor = st.color;
+
+        stageBtns.forEach((btn, bIdx) => {
+          btn.classList.toggle('active', bIdx === idx);
+        });
+      }
+      sliderEl.value = Math.round(p * 1000);
+    }
+
+    // Wheel scroll moves through the 4 stages smoothly
+    window.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      isAutoPlaying = false;
+      updatePlayButtonUI();
+      const delta = e.deltaY * 0.00045;
+      targetProgress = clamp(targetProgress + delta, 0.0, 1.0);
+    }, { passive: false });
+
+    sliderEl.addEventListener('input', (e) => {
+      isAutoPlaying = false;
+      updatePlayButtonUI();
+      targetProgress = clamp(parseFloat(e.target.value) / 1000, 0.0, 1.0);
+    });
+
+    stageBtns.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        isAutoPlaying = false;
+        updatePlayButtonUI();
+        const stIdx = parseInt(btn.dataset.stage, 10);
+        targetProgress = STAGES[stIdx].centerProgress;
+      });
+    });
+
+    function updatePlayButtonUI() {
+      playBtn.classList.toggle('playing', isAutoPlaying);
+      playIcon.textContent = isAutoPlaying ? '❚❚' : '▶';
+      playLabel.textContent = isAutoPlaying ? 'Playing' : 'Auto-Journey';
+    }
+
+    playBtn.addEventListener('click', () => {
+      isAutoPlaying = !isAutoPlaying;
+      updatePlayButtonUI();
+    });
+
+    // -------------------------------------------------------------------------
+    // Raycasting & Poetic Region Captions (Tap / Click on Brain or Region Chips)
+    // -------------------------------------------------------------------------
+    const raycaster = new THREE.Raycaster();
+    const pointer = new THREE.Vector2();
+    let pointerDownPos = { x: 0, y: 0 };
+    let pointerDownTime = 0;
+
+    const captionCard = document.getElementById('caption-card');
+    const captionClose = document.getElementById('caption-close');
+    const captionTag = document.getElementById('caption-tag');
+    const captionTitle = document.getElementById('caption-title');
+    const captionPoetry = document.getElementById('caption-poetry');
+    const captionNeuro = document.getElementById('caption-neuro');
+    const regionChips = document.querySelectorAll('.region-chip');
+
+    function selectRegion(regionName, showCard = true, hitPoint = null) {
+      const info = REGION_INFO[regionName];
+      if (!info) return;
+      selectedRegionName = regionName;
+
+      captionTag.textContent = info.tag;
+      captionTitle.textContent = info.title;
+      captionPoetry.textContent = info.poetry;
+      captionNeuro.textContent = info.neuro;
+      captionTag.style.color = info.isDMN ? '#ffb84d' : '#38e8ff';
+
+      if (showCard) {
+        captionCard.classList.remove('hidden');
+      }
+
+      regionChips.forEach((chip) => {
+        chip.classList.toggle('active', chip.dataset.region === regionName);
+      });
+
+      if (hitPoint) {
+        markerSprite.position.copy(hitPoint);
+        markerSpriteMat.color.copy(info.pulseColorB);
+        markerSpriteMat.opacity = 0.85;
+      } else if (regionMeshes[regionName]) {
+        regionMeshes[regionName].geometry.computeBoundingSphere();
+        const c = regionMeshes[regionName].geometry.boundingSphere.center;
+        markerSprite.position.copy(c);
+        markerSpriteMat.color.copy(info.pulseColorB);
+        markerSpriteMat.opacity = 0.65;
+      }
+    }
+
+    captionClose.addEventListener('click', () => {
+      captionCard.classList.add('hidden');
+      selectedRegionName = null;
+      markerSpriteMat.opacity = 0.0;
+      regionChips.forEach((chip) => chip.classList.remove('active'));
+    });
+
+    regionChips.forEach((chip) => {
+      chip.addEventListener('click', () => {
+        selectRegion(chip.dataset.region, true);
+      });
+    });
+
+    renderer.domElement.addEventListener('pointerdown', (e) => {
+      pointerDownPos.x = e.clientX;
+      pointerDownPos.y = e.clientY;
+      pointerDownTime = performance.now();
+    });
+
+    renderer.domElement.addEventListener('pointerup', (e) => {
+      const dx = e.clientX - pointerDownPos.x;
+      const dy = e.clientY - pointerDownPos.y;
+      const dist = Math.hypot(dx, dy);
+      const dt = performance.now() - pointerDownTime;
+
+      // Distinguish a tap/click from an OrbitControls drag
+      if (dist < 9 && dt < 450 && clickableMeshes.length > 0) {
+        const rect = renderer.domElement.getBoundingClientRect();
+        pointer.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+        pointer.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+        raycaster.setFromCamera(pointer, camera);
+
+        const hits = raycaster.intersectObjects(clickableMeshes, false);
+        if (hits.length > 0) {
+          const hit = hits[0];
+          const rName = hit.object.userData.regionName;
+          selectRegion(rName, true, hit.point);
+        }
+      }
+    });
+
+    // -------------------------------------------------------------------------
+    // Stage Visual Interpolation Engine (60 FPS Render Loop)
+    // -------------------------------------------------------------------------
+    const clock = new THREE.Clock();
+
+    function evaluateStageVisuals(p, elapsed) {
+      // Envelope weights for each stage along progress p in [0..1]
+      const wSpread = smoothstep(0.20, 0.36, p) * (1.0 - smoothstep(0.55, 0.72, p));
+      const wDmnQuiet = smoothstep(0.22, 0.34, p) * (1.0 - smoothstep(0.52, 0.62, p));
+      const wDissolve = smoothstep(0.50, 0.65, p) * (1.0 - smoothstep(0.74, 0.88, p));
+      const wPeakWhiteout = Math.exp(-Math.pow((p - 0.68) / 0.085, 2));
+      const wReturn = smoothstep(0.76, 0.90, p);
+
+      // 1. Update Morph Target ('Unravel') & Shader Uniforms on all loaded brain meshes
+      for (const [rName, mesh] of Object.entries(regionMeshes)) {
+        const u = regionShaderUniforms[rName];
+        const info = REGION_INFO[rName] || {};
+        if (!u) continue;
+
+        u.uTime.value = elapsed;
+
+        // Activate Blender's 'Unravel' Shape Key during Stage 3 Dissolve!
+        if (mesh.morphTargetInfluences && mesh.morphTargetInfluences.length > 0) {
+          mesh.morphTargetInfluences[0] = clamp(wDissolve * 1.05, 0.0, 1.0);
+        }
+
+        const isSelected = (rName === selectedRegionName) ? 1.0 : 0.0;
+        u.uHighlight.value = lerp(u.uHighlight.value, isSelected, 0.12);
+        u.uCalm.value = wReturn;
+        u.uWhiteout.value = clamp(wDissolve * 0.95 + wPeakWhiteout * 0.35, 0.0, 1.0);
+
+        if (info.isDMN) {
+          // Default Mode Network:
+          // Active warm amber in Stage 1 -> DIMS AND QUIETS in Stage 2 -> White-Out in Stage 3 -> Soft return in Stage 4
+          const s1Gate = 0.82;
+          const quietGate = lerp(s1Gate, 0.03, wDmnQuiet);
+          u.uSparkGate.value = lerp(quietGate, 1.0, clamp(wDissolve + wReturn * 0.7, 0, 1));
+
+          const baseEmit = lerp(1.35, 0.04, wDmnQuiet);
+          u.uBaseEmit.value = lerp(baseEmit, 0.65, wReturn) + wDissolve * 8.5 + wPeakWhiteout * 6.0;
+
+          const pulseEmit = lerp(4.8, 0.06, wDmnQuiet);
+          u.uPulseEmit.value = lerp(pulseEmit, 2.2, wReturn) + wDissolve * 9.0;
+          u.uSparkSharpness.value = lerp(10.0, 5.0, wDissolve + wReturn * 0.5);
+        } else if (rName === "Region_Singularity_Field") {
+          // Unified Singularity Field: tucked inside core until Stage 3 Dissolve
+          const sScale = lerp(0.18, 1.45, wDissolve) + wReturn * 0.18;
+          mesh.scale.setScalar(sScale);
+          u.uSparkGate.value = clamp(0.05 + wSpread * 0.35 + wDissolve * 1.0 + wReturn * 0.35, 0, 1);
+          u.uBaseEmit.value = 0.02 + wSpread * 0.6 + wDissolve * 14.0 + wPeakWhiteout * 12.0 + wReturn * 0.45;
+          u.uPulseEmit.value = 0.1 + wSpread * 2.5 + wDissolve * 14.0 + wReturn * 1.1;
+          u.uSparkSharpness.value = 7.0;
+        } else {
+          // Cortical Canopy, Thalamocortical Core, Corpus Callosum & Cerebellum:
+          // Stage 1: Sparse sharp sparks -> Stage 2: Full-brain cascade -> Stage 3: White-Out -> Stage 4: Calm harmony
+          const isCore = (rName === "Region_Thalamocortical_Core");
+          const gate = clamp(0.24 + wSpread * 0.74 + wDissolve * 0.8 + wReturn * 0.48, 0, 1);
+          u.uSparkGate.value = gate;
+
+          const baseE = 0.18 + wSpread * (isCore ? 1.85 : 0.85) + wDissolve * 9.5 + wPeakWhiteout * 6.0 + wReturn * 0.42;
+          const pulseE = 4.6 + wSpread * (isCore ? 8.5 : 5.8) + wDissolve * 10.0 - wReturn * 2.1;
+          u.uBaseEmit.value = baseE;
+          u.uPulseEmit.value = Math.max(1.8, pulseE);
+          u.uSparkSharpness.value = lerp(14.0, 6.0, clamp(wSpread * 0.6 + wDissolve + wReturn * 0.7, 0, 1));
+          u.uPulseSpeed.value = lerp(1.35, 2.1, wSpread + wDissolve * 0.5) - wReturn * 0.45;
+        }
+      }
+
+      // 2. Update Central Singularity Sprite, Core Light & White-Out Atmospheric Veil
+      coreSprite.scale.setScalar(0.55 + wSpread * 0.65 + wDissolve * 3.8 + wPeakWhiteout * 2.2 + wReturn * 0.35);
+      coreSpriteMat.opacity = clamp(0.06 + wSpread * 0.18 + wDissolve * 0.85 + wPeakWhiteout * 0.3, 0, 1);
+      coreLight.intensity = 2.0 + wSpread * 5.0 + wDissolve * 35.0 + wReturn * 2.0;
+
+      // White-out screen veil swells at peak Stage 3 so boundaries melt into unified white radiance
+      whiteoutVeil.style.opacity = (wPeakWhiteout * 0.78 + wDissolve * 0.18).toFixed(3);
+
+      // 3. Update UnrealBloomPass intensity
+      bloomPass.strength = 0.85 + wSpread * 0.30 + wDissolve * 1.15 + wPeakWhiteout * 0.65 + wReturn * 0.05;
+      bloomPass.radius = 0.60 + wDissolve * 0.32;
+
+      // 4. Update Floating Cosmic Particles
+      const posAttr = pGeo.attributes.position;
+      const expand = 1.0 + wDissolve * 0.85 + wSpread * 0.12;
+      for (let i = 0; i < particleCount; i++) {
+        const seed = pSeeds[i];
+        const bx = pBasePos[i * 3];
+        const by = pBasePos[i * 3 + 1];
+        const bz = pBasePos[i * 3 + 2];
+        const swirl = elapsed * (0.12 + 0.18 * wSpread + 0.25 * wDissolve) + seed * 6.28;
+        const cs = Math.cos(swirl * 0.35);
+        const ss = Math.sin(swirl * 0.35);
+        const rx = bx * cs - bz * ss;
+        const rz = bx * ss + bz * cs;
+        posAttr.array[i * 3]     = rx * expand + Math.sin(elapsed * 1.2 + seed * 12.0) * 0.03;
+        posAttr.array[i * 3 + 1] = by * expand + Math.cos(elapsed * 1.1 + seed * 9.0) * 0.03;
+        posAttr.array[i * 3 + 2] = rz * expand;
+      }
+      posAttr.needsUpdate = true;
+      pMat.opacity = clamp(0.32 + wSpread * 0.25 + wDissolve * 0.42, 0.0, 0.95);
+      pMat.size = 0.038 + wDissolve * 0.035;
+      if (wDissolve > 0.3) {
+        pMat.color.setRGB(1.0, 0.98, 0.92);
+      } else if (wReturn > 0.4) {
+        pMat.color.setRGB(0.45, 0.95, 0.86);
+      } else {
+        pMat.color.setRGB(0.45, 0.86, 1.0);
+      }
+
+      // Pulse marker sprite gently
+      if (markerSpriteMat.opacity > 0.01) {
+        const pulseScale = 0.24 + 0.05 * Math.sin(elapsed * 4.0);
+        markerSprite.scale.setScalar(pulseScale);
+      }
+    }
+
+    function animate() {
+      requestAnimationFrame(animate);
+      const dt = Math.min(clock.getDelta(), 0.1);
+      const elapsed = clock.getElapsedTime();
+
+      if (isAutoPlaying) {
+        targetProgress = (targetProgress + dt / 14.0) % 1.0;
+      }
+
+      progress = lerp(progress, targetProgress, 0.08);
+      syncStageHUD(progress);
+      evaluateStageVisuals(progress, elapsed);
+
+      controls.update();
+      composer.render();
+    }
+
+    animate();
+
+    // Responsive resize
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      composer.setSize(window.innerWidth, window.innerHeight);
+    });
+  </script>
+</body>
+</html>

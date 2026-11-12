@@ -1,0 +1,1213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+  <title>The 5-MeO-DMT Journey — MINDS Insight Retreat · Tepoztlán</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Cormorant+SC:wght@300;400;500&family=Raleway:wght@200;300;400&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg-color: #03050a;
+      --fg-primary: #f7f4ee;
+      --fg-secondary: rgba(247, 244, 238, 0.72);
+      --accent-gold: #e8c682;
+      --glass-bg: rgba(10, 14, 26, 0.58);
+      --glass-border: rgba(232, 198, 130, 0.26);
+      --card-shadow: 0 20px 50px rgba(0, 0, 0, 0.55);
+    }
+
+    body.light-unity-mode {
+      --fg-primary: #261b10;
+      --fg-secondary: rgba(42, 30, 18, 0.76);
+      --accent-gold: #7d5824;
+      --glass-bg: rgba(252, 249, 242, 0.72);
+      --glass-border: rgba(125, 88, 36, 0.28);
+      --card-shadow: 0 18px 45px rgba(80, 58, 28, 0.14);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+      width: 100%;
+      min-height: 100%;
+      background-color: var(--bg-color);
+      color: var(--fg-primary);
+      font-family: 'Raleway', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-weight: 300;
+      overflow-x: hidden;
+      scroll-behavior: smooth;
+      transition: color 0.8s ease;
+    }
+
+    /* Fixed 3D WebGL Canvas */
+    #canvas-container {
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 1;
+      touch-action: pan-y;
+      cursor: grab;
+    }
+    #canvas-container.dragging {
+      cursor: grabbing;
+    }
+    #canvas-container.hovering-node {
+      cursor: pointer;
+    }
+
+    /* Subtle Top Header */
+    header.hud-header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 20;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.25rem 2rem;
+      pointer-events: none;
+    }
+
+    .brand-lockup {
+      pointer-events: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 0.18rem;
+    }
+    .brand-eyebrow {
+      font-family: 'Cormorant SC', serif;
+      font-size: 0.72rem;
+      letter-spacing: 0.34em;
+      text-transform: uppercase;
+      color: var(--accent-gold);
+      transition: color 0.6s ease;
+    }
+    .brand-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.15rem;
+      font-weight: 400;
+      letter-spacing: 0.08em;
+      color: var(--fg-primary);
+    }
+
+    .hud-controls {
+      pointer-events: auto;
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+    }
+
+    .hud-btn {
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      color: var(--fg-primary);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      padding: 0.48rem 0.95rem;
+      border-radius: 999px;
+      font-family: 'Raleway', sans-serif;
+      font-size: 0.72rem;
+      font-weight: 300;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all 0.35s ease;
+    }
+    .hud-btn:hover {
+      border-color: var(--accent-gold);
+      transform: translateY(-1px);
+    }
+
+    /* Right-side 7-Scene Chapter Rail */
+    nav.scene-rail {
+      position: fixed;
+      right: 1.6rem;
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 20;
+      display: flex;
+      flex-direction: column;
+      gap: 0.85rem;
+    }
+
+    .rail-dot {
+      position: relative;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      border: 1px solid var(--accent-gold);
+      background: transparent;
+      cursor: pointer;
+      transition: all 0.35s ease;
+      padding: 0;
+    }
+    .rail-dot.active {
+      background: var(--accent-gold);
+      transform: scale(1.38);
+      box-shadow: 0 0 12px var(--accent-gold);
+    }
+    .rail-dot::before {
+      content: attr(data-label);
+      position: absolute;
+      right: 20px;
+      top: 50%;
+      transform: translateY(-50%);
+      white-space: nowrap;
+      font-family: 'Cormorant SC', serif;
+      font-size: 0.72rem;
+      letter-spacing: 0.22em;
+      color: var(--fg-secondary);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease, transform 0.25s ease;
+    }
+    .rail-dot:hover::before,
+    .rail-dot.active::before {
+      opacity: 1;
+      transform: translateY(-50%) translateX(-2px);
+    }
+
+    /* Fixed Lower-Third Cinematic Caption Bar (Never covers central visual) */
+    .cinematic-caption-stage {
+      position: fixed;
+      left: 50%;
+      bottom: 2.4rem;
+      transform: translateX(-50%);
+      z-index: 15;
+      width: min(92vw, 780px);
+      text-align: center;
+      pointer-events: none;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.55rem;
+    }
+
+    .scene-chapter-num {
+      font-family: 'Cormorant SC', serif;
+      font-size: 0.74rem;
+      letter-spacing: 0.38em;
+      color: var(--accent-gold);
+      text-transform: uppercase;
+      opacity: 0.9;
+    }
+
+    .scene-main-title {
+      font-family: 'Cormorant SC', serif;
+      font-weight: 300;
+      font-size: clamp(1.45rem, 2.8vw, 2.15rem);
+      letter-spacing: 0.28em;
+      color: var(--fg-primary);
+      text-shadow: 0 2px 24px rgba(0, 0, 0, 0.35);
+      transition: opacity 0.5s ease, transform 0.5s ease;
+    }
+
+    .caption-divider {
+      width: 68px;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--accent-gold), transparent);
+      opacity: 0.65;
+    }
+
+    .scene-poetic-lines {
+      min-height: 3.1rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.28rem;
+    }
+
+    .poetic-line {
+      font-family: 'Raleway', sans-serif;
+      font-weight: 200;
+      font-size: clamp(1.02rem, 2vw, 1.34rem);
+      letter-spacing: 0.14em;
+      line-height: 1.45;
+      color: var(--fg-primary);
+      transition: opacity 0.55s ease, transform 0.55s ease;
+    }
+    .poetic-line.secondary-line {
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      font-weight: 300;
+      font-size: clamp(1.08rem, 2.1vw, 1.42rem);
+      letter-spacing: 0.11em;
+      color: var(--fg-secondary);
+    }
+
+    /* Interactive Hotspot Pills for Touch / Click Exploration */
+    .interactive-pills-bar {
+      pointer-events: auto;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 0.45rem;
+      margin-top: 0.35rem;
+    }
+
+    .hotspot-pill {
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      color: var(--fg-secondary);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      padding: 0.28rem 0.72rem;
+      border-radius: 999px;
+      font-size: 0.68rem;
+      letter-spacing: 0.14em;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    .hotspot-pill:hover,
+    .hotspot-pill.active {
+      color: var(--fg-primary);
+      border-color: var(--accent-gold);
+      background: rgba(232, 198, 130, 0.16);
+    }
+
+    .interaction-hint {
+      font-size: 0.64rem;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--fg-secondary);
+      opacity: 0.68;
+      margin-top: 0.15rem;
+    }
+
+    /* Floating Poetic Insight Popover Card (when tapping 3D elements) */
+    .insight-card {
+      position: fixed;
+      left: 2rem;
+      top: 50%;
+      transform: translateY(-50%) translateX(-16px);
+      z-index: 25;
+      width: min(88vw, 340px);
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border-radius: 16px;
+      padding: 1.35rem 1.45rem;
+      box-shadow: var(--card-shadow);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.4s ease, transform 0.4s ease;
+    }
+    .insight-card.visible {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateY(-50%) translateX(0);
+    }
+    .insight-close {
+      position: absolute;
+      top: 0.75rem;
+      right: 0.9rem;
+      background: none;
+      border: none;
+      color: var(--fg-secondary);
+      font-size: 1.1rem;
+      cursor: pointer;
+    }
+    .insight-tag {
+      font-family: 'Cormorant SC', serif;
+      font-size: 0.68rem;
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+      color: var(--accent-gold);
+      margin-bottom: 0.35rem;
+    }
+    .insight-heading {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.32rem;
+      font-weight: 400;
+      letter-spacing: 0.05em;
+      color: var(--fg-primary);
+      margin-bottom: 0.55rem;
+    }
+    .insight-body {
+      font-family: 'Raleway', sans-serif;
+      font-size: 0.86rem;
+      font-weight: 300;
+      line-height: 1.65;
+      letter-spacing: 0.04em;
+      color: var(--fg-secondary);
+    }
+
+    /* Scroll Track Container: 7 Distinct Scene Sections */
+    main.scroll-track {
+      position: relative;
+      z-index: 2;
+      width: 100%;
+      pointer-events: none;
+    }
+    section.scene-step {
+      height: 145vh;
+      width: 100%;
+    }
+
+    /* Loading Banner */
+    #loading-indicator {
+      position: fixed;
+      top: 4.5rem;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 30;
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      padding: 0.4rem 1.1rem;
+      border-radius: 999px;
+      font-size: 0.7rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--accent-gold);
+      backdrop-filter: blur(10px);
+      transition: opacity 0.6s ease;
+      pointer-events: none;
+    }
+    #loading-indicator.hidden {
+      opacity: 0;
+    }
+
+    /* Film Modal for Watching render.mp4 */
+    .film-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 50;
+      background: rgba(3, 5, 10, 0.92);
+      backdrop-filter: blur(16px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.4s ease;
+    }
+    .film-modal.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .film-modal video {
+      width: min(94vw, 1120px);
+      max-height: 80vh;
+      border-radius: 12px;
+      border: 1px solid rgba(232, 198, 130, 0.35);
+      box-shadow: 0 24px 80px rgba(0, 0, 0, 0.85);
+      background: #000;
+    }
+    .film-modal-close {
+      margin-top: 1rem;
+    }
+
+    @media (max-width: 768px) {
+      header.hud-header {
+        padding: 0.9rem 1.1rem;
+      }
+      .brand-title {
+        font-size: 0.98rem;
+      }
+      nav.scene-rail {
+        right: 0.75rem;
+        gap: 0.65rem;
+      }
+      .rail-dot::before {
+        display: none;
+      }
+      .insight-card {
+        left: 50%;
+        top: 5.2rem;
+        transform: translateX(-50%) translateY(-10px);
+        width: 92vw;
+      }
+      .insight-card.visible {
+        transform: translateX(-50%) translateY(0);
+      }
+      .cinematic-caption-stage {
+        bottom: 1.25rem;
+      }
+    }
+  </style>
+
+  <!-- Three.js v0.170.0 CDN Import Map (No build step required) -->
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://unpkg.com/three@0.170.0/build/three.module.js",
+        "three/addons/": "https://unpkg.com/three@0.170.0/examples/jsm/"
+      }
+    }
+  </script>
+</head>
+<body>
+
+  <!-- 3D WebGL Viewport -->
+  <div id="canvas-container" aria-label="Interactive 3D journey canvas"></div>
+
+  <!-- Top Header & Controls -->
+  <header class="hud-header">
+    <div class="brand-lockup">
+      <span class="brand-eyebrow">MINDS Insight Retreat · Tepoztlán</span>
+      <h1 class="brand-title">The 5-MeO-DMT Journey</h1>
+    </div>
+    <div class="hud-controls">
+      <button id="btn-audio" class="hud-btn" type="button" title="Toggle meditative harmonic soundscape">Sound: Off</button>
+      <button id="btn-film" class="hud-btn" type="button" title="Watch the rendered 1080p Blender film">Watch Film</button>
+      <button id="btn-reset-view" class="hud-btn" type="button" title="Reset camera angle">Reset View</button>
+    </div>
+  </header>
+
+  <div id="loading-indicator">Loading 3D Sanctuary…</div>
+
+  <!-- Right-side 7-Scene Navigation Rail -->
+  <nav class="scene-rail" aria-label="Scene navigation">
+    <button class="rail-dot active" data-scene="1" data-label="I · Arrival" aria-label="Scene 1: Arrival"></button>
+    <button class="rail-dot" data-scene="2" data-label="II · Ignition" aria-label="Scene 2: Ignition"></button>
+    <button class="rail-dot" data-scene="3" data-label="III · Cascade" aria-label="Scene 3: Cascade"></button>
+    <button class="rail-dot" data-scene="4" data-label="IV · Tunnel" aria-label="Scene 4: Tunnel"></button>
+    <button class="rail-dot" data-scene="5" data-label="V · White light" aria-label="Scene 5: White light"></button>
+    <button class="rail-dot" data-scene="6" data-label="VI · Return" aria-label="Scene 6: Return"></button>
+    <button class="rail-dot" data-scene="7" data-label="VII · Integration" aria-label="Scene 7: Integration"></button>
+  </nav>
+
+  <!-- Poetic Insight Popover Card (Revealed on tapping/clicking 3D elements) -->
+  <aside id="insight-card" class="insight-card" aria-live="polite">
+    <button id="insight-close" class="insight-close" aria-label="Close insight">&times;</button>
+    <div id="insight-tag" class="insight-tag">Scene I · Arrival</div>
+    <h2 id="insight-heading" class="insight-heading">The Single Inhale</h2>
+    <p id="insight-body" class="insight-body">
+      One deliberate breath draws scattered awareness inward, gathering light into the center of being.
+    </p>
+  </aside>
+
+  <!-- Lower-Third Required Scene Title & Poetic Text -->
+  <div class="cinematic-caption-stage">
+    <div id="caption-num" class="scene-chapter-num">Scene I of VII</div>
+    <h2 id="caption-title" class="scene-main-title">Arrival</h2>
+    <div class="caption-divider"></div>
+    <div class="scene-poetic-lines">
+      <p id="caption-line-1" class="poetic-line">Breathe in. Let the noise settle.</p>
+      <p id="caption-line-2" class="poetic-line secondary-line" style="display: none;"></p>
+    </div>
+    <div id="hotspot-pills" class="interactive-pills-bar"></div>
+    <div class="interaction-hint">Scroll through 7 scenes · Drag to orbit · Tap any glowing form for insight</div>
+  </div>
+
+  <!-- 7 Scroll Sections -->
+  <main class="scroll-track">
+    <section class="scene-step" data-scene="1"></section>
+    <section class="scene-step" data-scene="2"></section>
+    <section class="scene-step" data-scene="3"></section>
+    <section class="scene-step" data-scene="4"></section>
+    <section class="scene-step" data-scene="5"></section>
+    <section class="scene-step" data-scene="6"></section>
+    <section class="scene-step" data-scene="7"></section>
+  </main>
+
+  <!-- Full-Screen Rendered Film Modal -->
+  <div id="film-modal" class="film-modal" role="dialog" aria-modal="true" aria-label="Rendered Blender Film">
+    <video id="film-player" controls playsinline preload="metadata" poster="./preview.png">
+      <source src="./render.mp4" type="video/mp4" />
+    </video>
+    <button id="film-modal-close" class="hud-btn film-modal-close" type="button">Close Film</button>
+  </div>
+
+  <script type="module">
+    import * as THREE from 'three';
+    import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+    import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+    import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+    import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+    import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+
+    // -------------------------------------------------------------------------
+    // Exact Required Wording & Per-Scene Configuration for All 7 Scenes
+    // -------------------------------------------------------------------------
+    const SCENES = [
+      {
+        id: 1,
+        roman: 'I',
+        title: 'Arrival',
+        lines: ['Breathe in. Let the noise settle.'],
+        glb: './scene1.glb',
+        bgHex: 0x03050c,
+        fogDensity: 0.032,
+        bloomStrength: 1.15,
+        bloomThreshold: 0.18,
+        bloomRadius: 0.65,
+        camStart: new THREE.Vector3(0.0, 1.35, 8.2),
+        camEnd: new THREE.Vector3(0.0, 0.35, 3.1),
+        lookAt: new THREE.Vector3(0.0, 0.0, 0.0),
+        lightUnityMode: false,
+        insights: [
+          {
+            title: 'The Single Inhale',
+            text: 'One deliberate breath draws scattered awareness inward, gathering light into the center of being.',
+          },
+          {
+            title: 'Filaments of Prana',
+            text: 'Streams of luminous breath spiral inward from the dark periphery, quieting sensory noise.',
+          },
+          {
+            title: 'Ripples of Stillness',
+            text: 'Each concentric ring marks the settling of everyday ripples into a single point of attention.',
+          },
+        ],
+      },
+      {
+        id: 2,
+        roman: 'II',
+        title: 'Ignition',
+        lines: ['Every thought is a spark. Watch them light.'],
+        glb: './scene2.glb',
+        bgHex: 0x040918,
+        fogDensity: 0.035,
+        bloomStrength: 1.35,
+        bloomThreshold: 0.15,
+        bloomRadius: 0.72,
+        camStart: new THREE.Vector3(-3.2, -0.8, 5.8),
+        camEnd: new THREE.Vector3(0.15, 0.45, 1.4),
+        lookAt: new THREE.Vector3(0.0, 0.1, 0.0),
+        lightUnityMode: false,
+        insights: [
+          {
+            title: 'Action Potential Spark',
+            text: 'Every thought begins as a microscopic spark jumping across the silence of a synaptic cleft.',
+          },
+          {
+            title: 'Corpus Callosum Tracts',
+            text: 'From deep within the thalamus, ascending impulses bridge the left and right hemispheres in living light.',
+          },
+          {
+            title: 'Cortical Neural Loom',
+            text: 'Thousands of dormant axonal pathways awaken in resonant cascades across the folded cortex.',
+          },
+        ],
+      },
+      {
+        id: 3,
+        roman: 'III',
+        title: 'Cascade',
+        lines: ['The voice that narrates you goes quiet.'],
+        glb: './scene3.glb',
+        bgHex: 0x08041a,
+        fogDensity: 0.030,
+        bloomStrength: 1.42,
+        bloomThreshold: 0.14,
+        bloomRadius: 0.75,
+        camStart: new THREE.Vector3(4.2, 2.3, 3.8),
+        camEnd: new THREE.Vector3(1.6, 1.4, 4.8),
+        lookAt: new THREE.Vector3(0.0, 0.2, 0.0),
+        lightUnityMode: false,
+        insights: [
+          {
+            title: 'Medial Prefrontal Hub (DMN)',
+            text: 'The narrator of "I, me, mine" softens and dims as the Default Mode Network grows quiet.',
+          },
+          {
+            title: 'Posterior Cingulate Hub (DMN)',
+            text: 'The anchor of autobiographical time releases its hold, allowing global fractal communion across the brain.',
+          },
+          {
+            title: 'Fractal Color Waves',
+            text: 'With the default-mode filter relaxed, distant cortical networks converse in sweeping waves of color.',
+          },
+        ],
+      },
+      {
+        id: 4,
+        roman: 'IV',
+        title: 'Tunnel',
+        lines: ['Edges soften. Where do you end?'],
+        glb: './scene4.glb',
+        bgHex: 0x090318,
+        fogDensity: 0.018,
+        bloomStrength: 1.48,
+        bloomThreshold: 0.16,
+        bloomRadius: 0.78,
+        // Note: Blender +Y maps to Three.js -Z after glTF Y-up conversion
+        camStart: new THREE.Vector3(0.0, 0.0, 2.0),
+        camEnd: new THREE.Vector3(0.0, 0.0, -68.0),
+        lookAt: new THREE.Vector3(0.0, 0.0, -85.0),
+        lightUnityMode: false,
+        insights: [
+          {
+            title: 'Sacred Geometry Corridor',
+            text: 'Subject and object dissolve into self-similar geometric symmetry; the boundary between observer and observed melts away.',
+          },
+          {
+            title: 'Melting Helical Strands',
+            text: 'Linear time and space twist into luminous ribbons carrying awareness toward the singular apex ahead.',
+          },
+          {
+            title: 'The Event Horizon',
+            text: 'At the vanishing point of the corridor, every distinction surrenders into boundless white radiance.',
+          },
+        ],
+      },
+      {
+        id: 5,
+        roman: 'V',
+        title: 'White light',
+        lines: [
+          'No self. No other. Only this.',
+          'Pure awareness, held in love.',
+        ],
+        glb: './scene5.glb',
+        bgHex: 0xf7f3eb,
+        fogDensity: 0.015,
+        bloomStrength: 0.42,
+        bloomThreshold: 0.72,
+        bloomRadius: 0.55,
+        camStart: new THREE.Vector3(0.0, 0.95, 5.4),
+        camEnd: new THREE.Vector3(0.95, 0.55, 4.2),
+        lookAt: new THREE.Vector3(0.0, 0.0, 0.0),
+        lightUnityMode: true,
+        insights: [
+          {
+            title: 'Pure Awareness',
+            text: 'Unborn, undiminished awareness — radiant without effort, holding everything in unconditional love.',
+          },
+          {
+            title: 'Rings of Non-Dual Grace',
+            text: 'In the silence beyond concept, golden geometry turns at the speed of eternity.',
+          },
+          {
+            title: 'The Lotus of Unity',
+            text: 'Nothing is excluded here; awareness recognizes itself in every petal of existence.',
+          },
+        ],
+      },
+      {
+        id: 6,
+        roman: 'VI',
+        title: 'Return',
+        lines: ['You come back softer.'],
+        glb: './scene6.glb',
+        bgHex: 0x0d0914,
+        fogDensity: 0.028,
+        bloomStrength: 1.18,
+        bloomThreshold: 0.20,
+        bloomRadius: 0.68,
+        camStart: new THREE.Vector3(0.0, 3.6, 4.2),
+        camEnd: new THREE.Vector3(1.1, 1.05, 5.6),
+        lookAt: new THREE.Vector3(0.0, 0.2, 0.0),
+        lightUnityMode: false,
+        insights: [
+          {
+            title: 'Streams of Condensation',
+            text: 'Like morning dew gathering on silk threads, boundless light settles gently back into neural pathways.',
+          },
+          {
+            title: 'Renewed Rose-Gold Loom',
+            text: 'The mind returns quieter, more flexible, and woven with warm golden coherence.',
+          },
+          {
+            title: 'Harmonized Inner Bridge',
+            text: 'Thought and stillness are no longer at war; the hemispheres breathe as a single whole.',
+          },
+        ],
+      },
+      {
+        id: 7,
+        roman: 'VII',
+        title: 'Integration',
+        lines: [
+          'Integration is where the journey lands.',
+          'Bring the light into the day.',
+        ],
+        glb: './scene7.glb',
+        bgHex: 0x24100e,
+        fogDensity: 0.012,
+        bloomStrength: 1.08,
+        bloomThreshold: 0.22,
+        bloomRadius: 0.65,
+        camStart: new THREE.Vector3(0.0, 1.42, 1.85),
+        camEnd: new THREE.Vector3(0.0, 2.05, 7.65),
+        lookAt: new THREE.Vector3(0.0, 1.25, -12.0),
+        lightUnityMode: false,
+        insights: [
+          {
+            title: 'The Awakened Heart',
+            text: 'What was glimpsed as boundless white light now rests quietly in the heart as warmth, humility, and presence.',
+          },
+          {
+            title: 'Cerro del Tepozteco Crags',
+            text: 'Jagged volcanic basalt cliffs guard the valley of Tepoztlán, standing as ancient witnesses to human awakening.',
+          },
+          {
+            title: 'Ripples Into Everyday Life',
+            text: 'From the stillness of the heart, concentric waves of kindness and clarity radiate into the waking day.',
+          },
+        ],
+      },
+    ];
+
+    // -------------------------------------------------------------------------
+    // Three.js Renderer, Scene, Camera & Post-Processing Setup
+    // -------------------------------------------------------------------------
+    const container = document.getElementById('canvas-container');
+    const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.15;
+    container.appendChild(renderer.domElement);
+
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(SCENES[0].bgHex);
+    scene.fog = new THREE.FogExp2(SCENES[0].bgHex, SCENES[0].fogDensity);
+
+    const camera = new THREE.PerspectiveCamera(42, window.innerWidth / window.innerHeight, 0.08, 220);
+    camera.position.copy(SCENES[0].camStart);
+
+    // Post-processing Composer with UnrealBloomPass
+    const composer = new EffectComposer(renderer);
+    const renderPass = new RenderPass(scene, camera);
+    composer.addPass(renderPass);
+
+    const bloomPass = new UnrealBloomPass(
+      new THREE.Vector2(window.innerWidth, window.innerHeight),
+      SCENES[0].bloomStrength,
+      SCENES[0].bloomRadius,
+      SCENES[0].bloomThreshold
+    );
+    composer.addPass(bloomPass);
+
+    const outputPass = new OutputPass();
+    composer.addPass(outputPass);
+
+    // Scene Lighting
+    const ambientLight = new THREE.AmbientLight(0xdbe8ff, 1.35);
+    scene.add(ambientLight);
+
+    const keyLight = new THREE.PointLight(0xffcf87, 8.5, 45, 1.2);
+    keyLight.position.set(2.5, 3.5, 4.0);
+    scene.add(keyLight);
+
+    const rimLight = new THREE.DirectionalLight(0x88ccff, 2.4);
+    rimLight.position.set(-4.0, 5.0, -6.0);
+    scene.add(rimLight);
+
+    // -------------------------------------------------------------------------
+    // Load All 7 Scene GLBs + Ambient Particle Field
+    // -------------------------------------------------------------------------
+    const gltfLoader = new GLTFLoader();
+    const sceneGroups = new Map();
+    const interactiveMeshesByScene = new Map();
+    let loadedCount = 0;
+    const loadingEl = document.getElementById('loading-indicator');
+
+    SCENES.forEach((sc, idx) => {
+      const holder = new THREE.Group();
+      holder.name = `SceneHolder_${sc.id}`;
+      holder.visible = idx === 0;
+      scene.add(holder);
+      sceneGroups.set(sc.id, holder);
+      interactiveMeshesByScene.set(sc.id, []);
+
+      gltfLoader.load(
+        sc.glb,
+        (gltf) => {
+          const root = gltf.scene;
+          holder.add(root);
+
+          const meshes = [];
+          root.traverse((child) => {
+            if (child.isMesh) {
+              // Ensure materials glow richly under UnrealBloomPass
+              if (child.material) {
+                child.material = child.material.clone();
+                if (child.material.emissive) {
+                  const baseEmissive = child.material.emissiveIntensity || 1.0;
+                  child.userData.baseEmissiveIntensity = Math.min(baseEmissive, 4.2);
+                  child.material.emissiveIntensity = child.userData.baseEmissiveIntensity;
+                }
+              }
+              // Propagate parent extras/userData if attached on parent object node
+              if (!child.userData.insight_title && child.parent && child.parent.userData) {
+                Object.assign(child.userData, child.parent.userData);
+              }
+              if (!child.userData.insight_title) {
+                const fallback = sc.insights[meshes.length % sc.insights.length];
+                child.userData.insight_title = fallback.title;
+                child.userData.insight_text = fallback.text;
+                child.userData.scene_id = sc.id;
+              }
+              meshes.push(child);
+            }
+          });
+          interactiveMeshesByScene.set(sc.id, meshes);
+
+          loadedCount++;
+          if (loadedCount >= SCENES.length) {
+            loadingEl.classList.add('hidden');
+          } else {
+            loadingEl.textContent = `Loading 3D Sanctuary (${loadedCount}/${SCENES.length})…`;
+          }
+        },
+        undefined,
+        (err) => {
+          console.warn(`Fallback geometry for scene ${sc.id}:`, err);
+          loadedCount++;
+          if (loadedCount >= SCENES.length) loadingEl.classList.add('hidden');
+        }
+      );
+    });
+
+    // Supplemental Star / Prana Particle Field
+    const particleCount = 420;
+    const pGeom = new THREE.BufferGeometry();
+    const pPos = new Float32Array(particleCount * 3);
+    for (let i = 0; i < particleCount; i++) {
+      pPos[i * 3] = (Math.random() - 0.5) * 22;
+      pPos[i * 3 + 1] = (Math.random() - 0.5) * 14;
+      pPos[i * 3 + 2] = (Math.random() - 0.5) * 22;
+    }
+    pGeom.setAttribute('position', new THREE.BufferAttribute(pPos, 3));
+    const pMat = new THREE.PointsMaterial({
+      color: 0xf6d899,
+      size: 0.065,
+      transparent: true,
+      opacity: 0.55,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+    });
+    const ambientParticles = new THREE.Points(pGeom, pMat);
+    scene.add(ambientParticles);
+
+    // -------------------------------------------------------------------------
+    // Scroll Progress, Active Scene State & UI Updates
+    // -------------------------------------------------------------------------
+    let activeSceneIndex = 0; // 0..6
+    let localSceneProgress = 0; // 0..1 within current scene
+    let targetYaw = 0;
+    let targetPitch = 0;
+    let currentYaw = 0;
+    let currentPitch = 0;
+
+    const captionNumEl = document.getElementById('caption-num');
+    const captionTitleEl = document.getElementById('caption-title');
+    const captionLine1El = document.getElementById('caption-line-1');
+    const captionLine2El = document.getElementById('caption-line-2');
+    const pillsContainer = document.getElementById('hotspot-pills');
+    const railDots = Array.from(document.querySelectorAll('.rail-dot'));
+
+    const insightCard = document.getElementById('insight-card');
+    const insightTag = document.getElementById('insight-tag');
+    const insightHeading = document.getElementById('insight-heading');
+    const insightBody = document.getElementById('insight-body');
+
+    function showInsight(sceneConfig, title, text) {
+      insightTag.textContent = `Scene ${sceneConfig.roman} · ${sceneConfig.title}`;
+      insightHeading.textContent = title;
+      insightBody.textContent = text;
+      insightCard.classList.add('visible');
+    }
+
+    document.getElementById('insight-close').addEventListener('click', () => {
+      insightCard.classList.remove('visible');
+    });
+
+    function renderHotspotPills(sceneConfig) {
+      pillsContainer.innerHTML = '';
+      sceneConfig.insights.forEach((item) => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'hotspot-pill';
+        btn.textContent = `✦ ${item.title}`;
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          document.querySelectorAll('.hotspot-pill').forEach((p) => p.classList.remove('active'));
+          btn.classList.add('active');
+          showInsight(sceneConfig, item.title, item.text);
+        });
+        pillsContainer.appendChild(btn);
+      });
+    }
+
+    function updateSceneUI(sceneIdx, progressInScene) {
+      const sc = SCENES[sceneIdx];
+      document.body.classList.toggle('light-unity-mode', sc.lightUnityMode);
+
+      captionNumEl.textContent = `Scene ${sc.roman} of VII`;
+      captionTitleEl.textContent = sc.title;
+
+      if (sc.lines.length === 1) {
+        captionLine1El.textContent = sc.lines[0];
+        captionLine1El.style.opacity = '1';
+        captionLine2El.style.display = 'none';
+      } else {
+        // Two sequential lines ("..." then "...") — both accessible and emphasized by scroll half
+        captionLine1El.textContent = sc.lines[0];
+        captionLine2El.textContent = sc.lines[1];
+        captionLine2El.style.display = 'block';
+        const secondHalf = progressInScene > 0.48;
+        captionLine1El.style.opacity = secondHalf ? '0.68' : '1.0';
+        captionLine2El.style.opacity = secondHalf ? '1.0' : '0.72';
+      }
+
+      railDots.forEach((dot, idx) => {
+        dot.classList.toggle('active', idx === sceneIdx);
+      });
+    }
+
+    // Initialize UI for Scene 1
+    renderHotspotPills(SCENES[0]);
+    updateSceneUI(0, 0);
+
+    function handleScroll() {
+      const maxScroll = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+      const scrollFraction = Math.max(0, Math.min(0.9999, window.scrollY / maxScroll));
+      const scaled = scrollFraction * SCENES.length;
+      const newSceneIdx = Math.min(SCENES.length - 1, Math.floor(scaled));
+      localSceneProgress = scaled - newSceneIdx;
+
+      if (newSceneIdx !== activeSceneIndex) {
+        activeSceneIndex = newSceneIdx;
+        sceneGroups.forEach((grp, id) => {
+          grp.visible = id === SCENES[activeSceneIndex].id;
+        });
+        renderHotspotPills(SCENES[activeSceneIndex]);
+        insightCard.classList.remove('visible');
+      }
+      updateSceneUI(activeSceneIndex, localSceneProgress);
+    }
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+
+    // Rail dot click navigation
+    railDots.forEach((dot, idx) => {
+      dot.addEventListener('click', () => {
+        const sections = document.querySelectorAll('.scene-step');
+        if (sections[idx]) {
+          sections[idx].scrollIntoView({ behavior: 'smooth' });
+        }
+      });
+    });
+
+    // -------------------------------------------------------------------------
+    // Drag-to-Rotate (Mouse & Touch) + Tap-to-Inspect Raycasting
+    // -------------------------------------------------------------------------
+    let isPointerDown = false;
+    let downX = 0;
+    let downY = 0;
+    let lastX = 0;
+    let lastY = 0;
+    let dragDistance = 0;
+
+    const raycaster = new THREE.Raycaster();
+    const pointerNDC = new THREE.Vector2();
+    let highlightedMesh = null;
+
+    container.addEventListener('pointerdown', (e) => {
+      isPointerDown = true;
+      downX = lastX = e.clientX;
+      downY = lastY = e.clientY;
+      dragDistance = 0;
+      container.classList.add('dragging');
+    });
+
+    window.addEventListener('pointermove', (e) => {
+      if (isPointerDown) {
+        const dx = e.clientX - lastX;
+        const dy = e.clientY - lastY;
+        dragDistance += Math.hypot(dx, dy);
+        lastX = e.clientX;
+        lastY = e.clientY;
+
+        targetYaw -= dx * 0.0065;
+        targetPitch = Math.max(-0.85, Math.min(0.85, targetPitch - dy * 0.005));
+        return;
+      }
+
+      // Hover raycast for desktop cursor feedback
+      pointerNDC.x = (e.clientX / window.innerWidth) * 2 - 1;
+      pointerNDC.y = -(e.clientY / window.innerHeight) * 2 + 1;
+      raycaster.setFromCamera(pointerNDC, camera);
+      const activeMeshes = interactiveMeshesByScene.get(SCENES[activeSceneIndex].id) || [];
+      const hits = raycaster.intersectObjects(activeMeshes, false);
+      container.classList.toggle('hovering-node', hits.length > 0);
+    });
+
+    window.addEventListener('pointerup', (e) => {
+      if (!isPointerDown) return;
+      isPointerDown = false;
+      container.classList.remove('dragging');
+
+      // If pointer barely moved, treat as a tap/click for poetic insight
+      if (dragDistance < 8) {
+        pointerNDC.x = (e.clientX / window.innerWidth) * 2 - 1;
+        pointerNDC.y = -(e.clientY / window.innerHeight) * 2 + 1;
+        raycaster.setFromCamera(pointerNDC, camera);
+
+        const sc = SCENES[activeSceneIndex];
+        const activeMeshes = interactiveMeshesByScene.get(sc.id) || [];
+        const hits = raycaster.intersectObjects(activeMeshes, false);
+        if (hits.length > 0) {
+          const hitMesh = hits[0].object;
+          if (highlightedMesh && highlightedMesh.material && highlightedMesh.userData.baseEmissiveIntensity !== undefined) {
+            highlightedMesh.material.emissiveIntensity = highlightedMesh.userData.baseEmissiveIntensity;
+          }
+          highlightedMesh = hitMesh;
+          if (hitMesh.material && hitMesh.material.emissive) {
+            hitMesh.material.emissiveIntensity = (hitMesh.userData.baseEmissiveIntensity || 1.2) * 1.85;
+          }
+          const title = hitMesh.userData.insight_title || sc.insights[0].title;
+          const text = hitMesh.userData.insight_text || sc.insights[0].text;
+          showInsight(sc, title, text);
+        }
+      }
+    });
+
+    document.getElementById('btn-reset-view').addEventListener('click', () => {
+      targetYaw = 0;
+      targetPitch = 0;
+    });
+
+    // -------------------------------------------------------------------------
+    // Optional WebAudio Meditative Soundscape Synthesizer
+    // -------------------------------------------------------------------------
+    let audioCtx = null;
+    let audioRunning = false;
+    let masterGain = null;
+    const btnAudio = document.getElementById('btn-audio');
+
+    function toggleAudio() {
+      if (!audioCtx) {
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        audioCtx = new AudioContextClass();
+        masterGain = audioCtx.createGain();
+        masterGain.gain.value = 0.08;
+        masterGain.connect(audioCtx.destination);
+
+        const freqs = [110.0, 164.81, 220.0, 293.66];
+        freqs.forEach((f, idx) => {
+          const osc = audioCtx.createOscillator();
+          const g = audioCtx.createGain();
+          osc.type = idx % 2 === 0 ? 'sine' : 'triangle';
+          osc.frequency.value = f;
+          g.gain.value = 0.25 / (idx + 1);
+          osc.connect(g);
+          g.connect(masterGain);
+          osc.start();
+        });
+      }
+      if (audioRunning) {
+        audioCtx.suspend();
+        audioRunning = false;
+        btnAudio.textContent = 'Sound: Off';
+      } else {
+        audioCtx.resume();
+        audioRunning = true;
+        btnAudio.textContent = 'Sound: On';
+      }
+    }
+    btnAudio.addEventListener('click', toggleAudio);
+
+    // Film Modal Controls
+    const filmModal = document.getElementById('film-modal');
+    const filmPlayer = document.getElementById('film-player');
+    document.getElementById('btn-film').addEventListener('click', () => {
+      filmModal.classList.add('open');
+      filmPlayer.play().catch(() => {});
+    });
+    document.getElementById('film-modal-close').addEventListener('click', () => {
+      filmPlayer.pause();
+      filmModal.classList.remove('open');
+    });
+
+    // -------------------------------------------------------------------------
+    // Main Render & Procedural Animation Loop
+    // -------------------------------------------------------------------------
+    const clock = new THREE.Clock();
+    const tempBgColor = new THREE.Color();
+
+    function animate() {
+      requestAnimationFrame(animate);
+      const elapsed = clock.getElapsedTime();
+      const sc = SCENES[activeSceneIndex];
+
+      // Smoothly interpolate background, fog, and bloom settings
+      tempBgColor.setHex(sc.bgHex);
+      scene.background.lerp(tempBgColor, 0.08);
+      scene.fog.color.copy(scene.background);
+      scene.fog.density = THREE.MathUtils.lerp(scene.fog.density, sc.fogDensity, 0.08);
+
+      bloomPass.strength = THREE.MathUtils.lerp(bloomPass.strength, sc.bloomStrength, 0.08);
+      bloomPass.threshold = THREE.MathUtils.lerp(bloomPass.threshold, sc.bloomThreshold, 0.08);
+      bloomPass.radius = THREE.MathUtils.lerp(bloomPass.radius, sc.bloomRadius, 0.08);
+
+      // Smoothly damp drag rotation
+      currentYaw = THREE.MathUtils.lerp(currentYaw, targetYaw, 0.09);
+      currentPitch = THREE.MathUtils.lerp(currentPitch, targetPitch, 0.09);
+
+      // Camera interpolation along the active scene's path
+      camera.position.lerpVectors(sc.camStart, sc.camEnd, localSceneProgress);
+      if (sc.id === 4) {
+        // Subtle spiral roll inside Scene 4 Tunnel
+        camera.rotation.z = localSceneProgress * Math.PI * 0.65 + currentYaw * 0.4;
+      } else {
+        camera.rotation.z = 0;
+      }
+      camera.lookAt(sc.lookAt);
+
+      // Apply user drag rotation & subtle living breathing to the active scene holder
+      const activeGroup = sceneGroups.get(sc.id);
+      if (activeGroup) {
+        activeGroup.rotation.y = currentYaw + Math.sin(elapsed * 0.25) * (sc.id === 5 ? 0.04 : 0.09);
+        activeGroup.rotation.x = currentPitch;
+
+        // Per-scene dynamic animation accents
+        const meshes = interactiveMeshesByScene.get(sc.id) || [];
+        for (let i = 0; i < meshes.length; i++) {
+          const m = meshes[i];
+          const role = m.userData.role || '';
+          if (sc.id === 1 && role === 'core') {
+            const breathScale = 0.85 + 0.45 * Math.sin(localSceneProgress * Math.PI * 0.85 + elapsed * 0.8);
+            m.scale.setScalar(breathScale);
+          } else if (sc.id === 3 && (role === 'dmn_hub' || role === 'dmn_bridge')) {
+            // In Scene 3 (Cascade), dim the Default Mode Network hubs as the user scrolls through the scene!
+            if (m.material && m.material.emissive) {
+              const dmnDim = Math.max(0.05, 1.0 - localSceneProgress * 1.25);
+              m.material.emissiveIntensity = 3.5 * dmnDim;
+            }
+          } else if (sc.id === 3 && role === 'fractal_wave') {
+            if (m.material && m.material.emissive) {
+              m.material.emissiveIntensity = 1.6 + 1.4 * Math.sin(elapsed * 3.2 + i * 0.9);
+            }
+          } else if (sc.id === 7 && role === 'heart_light') {
+            const heartPulse = 1.0 + 0.16 * Math.sin(elapsed * 2.4);
+            m.scale.setScalar(heartPulse);
+          }
+        }
+      }
+
+      // Gently drift ambient particles
+      ambientParticles.rotation.y = elapsed * 0.03;
+      pMat.color.setHex(sc.lightUnityMode ? 0x9c7638 : 0xf6d899);
+
+      composer.render();
+    }
+
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      composer.setSize(window.innerWidth, window.innerHeight);
+    });
+
+    animate();
+  </script>
+</body>
+</html>
